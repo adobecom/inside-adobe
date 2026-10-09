@@ -1,0 +1,21 @@
+{
+  "variantName": "columns-image",
+  "baseBlock": "columns",
+  "canonicalModel": "standalone",
+  "visualCharacteristics": {
+    "layout": "2-column, text left (~2/3) image right (~1/3)",
+    "imageTreatment": "456x257 static image, no link",
+    "colorScheme": "light, white background",
+    "density": "medium"
+  },
+  "contentPattern": "Row of 2 cells: H4 + paragraphs + \"Download the PDF | PowerPoint | Express\" link paragraph | image",
+  "usage": {
+    "pagesUsing": [
+      "http://127.0.0.1:8765/adobe-mission-and-plan.html"
+    ],
+    "reuseCount": 0,
+    "lastUsed": "2026-10-08T19:56:32.459Z"
+  },
+  "options": [],
+  "memberVariantIds": []
+}

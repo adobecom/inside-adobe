@@ -1,0 +1,21 @@
+{
+  "variantName": "columns-video",
+  "baseBlock": "columns",
+  "canonicalModel": "standalone",
+  "visualCharacteristics": {
+    "layout": "2-column, text beside video thumbnail; column order varies (video right in sections 2/4, left in section 9)",
+    "imageTreatment": "456x257 linked thumbnail (links to iatv.adobe.com), H3 caption below, white circular play icon overlaid centered on thumbnail in source",
+    "colorScheme": "light, white background",
+    "density": "medium"
+  },
+  "contentPattern": "Row of 2 cells: rich text (paragraphs or bullet list) | linked image + H3 caption",
+  "usage": {
+    "pagesUsing": [
+      "http://127.0.0.1:8765/adobe-mission-and-plan.html"
+    ],
+    "reuseCount": 0,
+    "lastUsed": "2026-10-08T19:56:32.446Z"
+  },
+  "options": [],
+  "memberVariantIds": []
+}

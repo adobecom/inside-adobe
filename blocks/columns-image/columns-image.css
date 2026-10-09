@@ -1,0 +1,21 @@
+.columns-image {
+  max-width: var(--grid-container-width);
+  margin-inline: auto;
+
+  &,
+  .row {
+    display: grid;
+    gap: 16px;
+  }
+
+  .col-image picture {
+    display: block;
+  }
+}
+
+@media (width >= 900px) {
+  .columns-image .row {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}

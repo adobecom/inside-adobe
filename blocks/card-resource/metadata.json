@@ -1,0 +1,21 @@
+{
+  "variantName": "card-resource",
+  "baseBlock": "card",
+  "canonicalModel": "standalone",
+  "visualCharacteristics": {
+    "layout": "boxed card, 2 per row (section-metadata grid grid-2)",
+    "imageTreatment": "456x257 image below H3 title",
+    "colorScheme": "light card on white page",
+    "density": "medium"
+  },
+  "contentPattern": "Single cell: H3 title, image, optional paragraph, bulleted link list",
+  "usage": {
+    "pagesUsing": [
+      "http://127.0.0.1:8765/adobe-mission-and-plan.html"
+    ],
+    "reuseCount": 0,
+    "lastUsed": "2026-10-08T19:56:32.475Z"
+  },
+  "options": [],
+  "memberVariantIds": []
+}
