@@ -11,10 +11,10 @@ This guide hands over the first page migrated from the Inside Adobe intranet to 
 |---|---|
 | **Organization / site** | `adobecom` / `inside-adobe` |
 | **Repository** | https://github.com/adobecom/inside-adobe |
-| **Code branch** | `migrate/adobe-mission-and-plan` (commit `e274f4b`), pushed, no pull request yet |
+| **Code** | Merged to `main` via pull request #1 (merge commit `d839414`; migration commit `e274f4b`) |
 | **Migrated page** | `/about-adobe/adobe-mission-and-plan` (source: `inside.corp.adobe.com/content/inside/en/about-adobe/adobe-mission-and-plan.html`) |
 | **Shared fragments** | `/fragments/nav/header`, `/fragments/nav/footer` |
-| **Content status** | Uploaded to DA and previewed; **not published** |
+| **Content status** | Uploaded to DA and previewed; **not published**; preview is publicly readable |
 
 ---
 
@@ -23,9 +23,8 @@ This guide hands over the first page migrated from the Inside Adobe intranet to 
 ### Do first
 
 1. **Restrict access before sharing any links (security).** The original page sits behind Adobe SSO, and the footer is labelled "Adobe Confidential". The previewed page currently loads without signing in at `https://main--inside-adobe--adobecom.aem.page/about-adobe/adobe-mission-and-plan`. Configure site authentication for preview (and live) before publishing or sharing URLs (see §4.4).
-2. **Open and merge the pull request.** The code is on `migrate/adobe-mission-and-plan`. Until it reaches `main`, the main preview renders the new content with the old template code, so the new blocks, header and footer are unstyled there.
-3. **Check code sync for branches.** The branch URL (`migrate-adobe-mission-and-plan--inside-adobe--adobecom.aem.page`) serves content but returns 404 for code files, including `scripts/ak.js`. `main` serves code normally. Either the AEM Code Sync GitHub app hasn't processed the branch, or it isn't set up for branches. Re-push or check the app's installation (§4.3).
-4. **Publish** the page, header and footer once the code is on `main` and access control is in place (§2.6).
+2. **Publish** the page, header and footer once access control is in place (§2.6). All three are previewed; none is live yet.
+3. **Set the production hostname and locales** in `scripts/scripts.js` (still the template's `authorkit.dev` and template locale list; see below).
 
 ### Also outstanding
 
@@ -33,6 +32,7 @@ This guide hands over the first page migrated from the Inside Adobe intranet to 
 |---|---|
 | Production hostname | `scripts/scripts.js` still has the template's `hostnames = ['authorkit.dev']`. Set the real production host(s) so links are treated as internal correctly. |
 | Locales | `scripts/scripts.js` still lists the template locales (`/de`, `/es`, `/fr`, `/hi`, `/ja`, `/zh`). Trim them to what Inside Adobe needs. |
+| Branch code sync | Before the merge, the branch preview served content but no code (404 for `scripts/ak.js`) while `main` worked. Confirm the AEM Code Sync app handles branch pushes before relying on branch previews (§4.3). |
 | Block library | `columns-video`, `columns-image` and `card-resource` aren't registered in the DA block library yet. |
 | Block READMEs | The three new blocks' `README.md` files are generic and say "one row, one cell". Replace them with the structures in §2.3. |
 | Live features left out | Tools rail (Profile, Quick Links, Notifications, Learning Resources, Employee Directory), the intranet search box and the profile avatar weren't migrated: they load live, signed-in data. The edition picker is a plain link to the office directory. |
@@ -139,7 +139,7 @@ The footer code relies on this order: the last section is treated as copyright a
 
 Read `AGENTS.md` first. Key points: the repo is buildless (every line ships), the browser baseline is "Baseline Newly available", breakpoints are min-width only at 600/900/1200px, and `scripts/ak.js` is the shared engine and was **not** modified. Decisions are recorded in `docs/adr/`.
 
-### 3.2 What changed (commit `e274f4b`)
+### 3.2 What changed (commit `e274f4b`, merged in pull request #1)
 
 | Area | Files | Summary |
 |---|---|---|
@@ -203,7 +203,7 @@ The source page is behind Adobe SSO, so all imports ran from a **saved export** 
 |---|---|
 | Preview (main) | https://main--inside-adobe--adobecom.aem.page |
 | Live (main) | https://main--inside-adobe--adobecom.aem.live |
-| Branch preview | https://migrate-adobe-mission-and-plan--inside-adobe--adobecom.aem.page |
+| Branch preview | `https://{branch}--inside-adobe--adobecom.aem.page` |
 | Authoring | https://da.live/#/adobecom/inside-adobe |
 
 ### 4.2 Current content status (Admin API, 2026-10-09)
@@ -225,7 +225,7 @@ POST https://admin.hlx.page/cache/adobecom/inside-adobe/main/{path}     # purge 
 
 ### 4.3 Code sync
 
-`main` code is served correctly. The pushed branch serves no code yet (404 for `scripts/ak.js`), so branch previews show content without the matching code. Check that the AEM Code Sync GitHub app is installed for `adobecom/inside-adobe` and processes branch pushes, or rely on merging to `main`.
+`main` serves the merged code (verified 2026-10-09: new block files and the font-loading change are live on `main--inside-adobe--adobecom.aem.page`). Before the merge, the feature branch's preview served no code at all (404 for `scripts/ak.js`). Check that the AEM Code Sync GitHub app is installed for `adobecom/inside-adobe` and processes branch pushes, so branch previews can be used for review.
 
 ### 4.4 Access control (action required)
 
