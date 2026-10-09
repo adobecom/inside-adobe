@@ -5,6 +5,7 @@ import { setColorScheme } from '../section-metadata/section-metadata.js';
 const { locale } = getConfig();
 
 const HEADER_PATH = '/fragments/nav/header';
+const DESKTOP = matchMedia('(width >= 1200px)');
 
 const menuTriggers = new WeakMap();
 
@@ -36,6 +37,9 @@ function menuFocusout(e) {
   const open = e.target.closest('.is-open');
   if (!open) return;
   if (!e.relatedTarget) return;
+  // In the open mobile drawer, taps drive the accordion; collapsing on
+  // focusout shifts the layout mid-tap so the tap misses the next item
+  if (open.classList.contains('main-nav-item') && open.closest('.is-mobile-open')) return;
   if (open.contains(e.relatedTarget)) return;
   closeAllMenus();
 }
@@ -133,9 +137,14 @@ function closeDrawer(header, toggle) {
 
 function decorateNavToggle(btn) {
   btn.ariaExpanded = 'false';
+  const header = btn.closest('header');
+  if (!header) return;
+  // Clicking the dimmed backdrop below the drawer closes it
+  header.addEventListener('click', (e) => {
+    if (!header.classList.contains('is-mobile-open')) return;
+    if (e.target === header || e.target.classList.contains('header-content')) closeDrawer(header, btn);
+  });
   btn.addEventListener('click', () => {
-    const header = btn.closest('header');
-    if (!header) return;
     const opening = !header.classList.contains('is-mobile-open');
     if (!opening) {
       closeDrawer(header, btn);
@@ -187,7 +196,7 @@ function decorateMenu(li) {
   const list = li.querySelector(':scope > ul');
   if (!list) return null;
   const wrapper = document.createElement('div');
-  wrapper.className = 'menu';
+  wrapper.className = 'menu dropdown';
   wrapper.append(list);
   li.append(wrapper);
   return wrapper;
@@ -224,8 +233,27 @@ function decorateNavItem(li) {
   link.replaceWith(btn);
   menuTriggers.set(li, btn);
 
+  // Near the right edge, open the flyout column leftwards; anchor the panel
+  // to the trigger's right edge if even the first column would overflow
+  const align = () => {
+    li.classList.remove('menu-end', 'menu-flip');
+    if (!DESKTOP.matches || !li.classList.contains('is-open')) return;
+    const { right, width } = menu.getBoundingClientRect();
+    if (right > window.innerWidth) li.classList.add('menu-end');
+    else if (right + width > window.innerWidth) li.classList.add('menu-flip');
+  };
+
   btn.addEventListener('click', () => {
     toggleMenu(li);
+    align();
+  });
+  li.addEventListener('mouseenter', () => {
+    if (!DESKTOP.matches || li.classList.contains('is-open')) return;
+    toggleMenu(li);
+    align();
+  });
+  li.addEventListener('mouseleave', () => {
+    if (DESKTOP.matches && li.classList.contains('is-open')) closeAllMenus();
   });
 }
 
@@ -280,6 +308,7 @@ export function decorateNavSection(section) {
   }
   nav.addEventListener('keydown', menuKeydown);
   nav.addEventListener('focusout', menuFocusout);
+  DESKTOP.addEventListener('change', closeAllMenus);
 }
 
 function decorateActionSection(section) {
@@ -309,7 +338,9 @@ export default async function init(el) {
   const headerMeta = getMetadata('header-source');
   const path = headerMeta || HEADER_PATH;
   try {
-    const fragment = await loadFragment(`${locale.prefix}${path}`);
+    // Previews built from imported files (aem up --html-folder) serve them under /content
+    const fragment = await loadFragment(`${locale.prefix}${path}`)
+      .catch(() => loadFragment(`/content${locale.prefix}${path}`));
     fragment.classList.add('header-content');
     el.append(fragment);
     decorateHeaderContent(el);

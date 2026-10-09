@@ -1,0 +1,175 @@
+{
+  "metadata": {
+    "projectType": "da"
+  },
+  "templates": [
+    {
+      "name": "adobe-mission-and-plan",
+      "urls": [
+        "http://127.0.0.1:8765/adobe-mission-and-plan.html"
+      ],
+      "representativeUrl": "http://127.0.0.1:8765/adobe-mission-and-plan.html",
+      "description": "Inside Adobe about-page: H1, jump links, then H4-titled topic sections with side-by-side text/media and download links, ending in resource cards.",
+      "blocks": [
+        {
+          "name": "columns-video",
+          "instances": [
+            ".aem-Grid--9 > .flex:nth-of-type(5)",
+            ".aem-Grid--9 > .flex:nth-of-type(17)",
+            ".aem-Grid--9 > .flex:nth-of-type(42)"
+          ]
+        },
+        {
+          "name": "columns-image",
+          "instances": [
+            ".aem-Grid--9 > .flex:nth-of-type(24)",
+            ".aem-Grid--9 > .flex:nth-of-type(28)",
+            ".aem-Grid--9 > .flex:nth-of-type(32)",
+            ".aem-Grid--9 > .flex:nth-of-type(37)"
+          ]
+        },
+        {
+          "name": "card-resource",
+          "instances": [
+            ".boxtextandimage"
+          ]
+        }
+      ],
+      "urlPattern": "/*",
+      "sections": [
+        {
+          "id": "1",
+          "name": "Page title + jump links",
+          "selector": [
+            ".aem-Grid--9 > .position"
+          ],
+          "style": null,
+          "blocks": [],
+          "defaultContent": [
+            ".aem-Grid--9 > .position",
+            ".aem-Grid--9 > .text:nth-of-type(3)"
+          ]
+        },
+        {
+          "id": "2",
+          "name": "Intro + Shantanu video",
+          "selector": [
+            ".aem-Grid--9 > .flex:nth-of-type(5)"
+          ],
+          "style": null,
+          "blocks": [
+            "columns-video"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "3",
+          "name": "Mission & Plan — all on one page",
+          "selector": [
+            ".aem-Grid--9 > .text:nth-of-type(9)"
+          ],
+          "style": null,
+          "blocks": [],
+          "defaultContent": [
+            ".aem-Grid--9 > .text:nth-of-type(9)",
+            ".aem-Grid--9 > .image:nth-of-type(10)",
+            ".aem-Grid--9 > .text:nth-of-type(11)"
+          ]
+        },
+        {
+          "id": "4",
+          "name": "Our Mission",
+          "selector": [
+            ".aem-Grid--9 > .text:nth-of-type(15)"
+          ],
+          "style": null,
+          "blocks": [
+            "columns-video"
+          ],
+          "defaultContent": [
+            ".aem-Grid--9 > .text:nth-of-type(15)",
+            ".aem-Grid--9 > .text:nth-of-type(16)",
+            ".aem-Grid--9 > .image:nth-of-type(19)",
+            ".aem-Grid--9 > .text:nth-of-type(20)"
+          ]
+        },
+        {
+          "id": "5",
+          "name": "Our Company Values",
+          "selector": [
+            ".aem-Grid--9 > .flex:nth-of-type(24)"
+          ],
+          "style": null,
+          "blocks": [
+            "columns-image"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "6",
+          "name": "What we do",
+          "selector": [
+            ".aem-Grid--9 > .flex:nth-of-type(28)"
+          ],
+          "style": null,
+          "blocks": [
+            "columns-image"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "7",
+          "name": "Our audience strategy",
+          "selector": [
+            ".aem-Grid--9 > .flex:nth-of-type(32)"
+          ],
+          "style": null,
+          "blocks": [
+            "columns-image"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "8",
+          "name": "FY26 Must Wins",
+          "selector": [
+            ".aem-Grid--9 > .flex:nth-of-type(37)"
+          ],
+          "style": null,
+          "blocks": [
+            "columns-image"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "9",
+          "name": "Videos",
+          "selector": [
+            ".aem-Grid--9 > .text:nth-of-type(41)"
+          ],
+          "style": null,
+          "blocks": [
+            "columns-video"
+          ],
+          "defaultContent": [
+            ".aem-Grid--9 > .text:nth-of-type(41)"
+          ]
+        },
+        {
+          "id": "10",
+          "name": "Resources",
+          "selector": [
+            ".aem-Grid--9 > .text:nth-of-type(45)"
+          ],
+          "style": "container, grid-2",
+          "blocks": [
+            "card-resource"
+          ],
+          "defaultContent": [
+            ".aem-Grid--9 > .text:nth-of-type(45)"
+          ]
+        }
+      ]
+    }
+  ]
+}

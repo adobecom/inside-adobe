@@ -1,57 +1,225 @@
 footer {
-  a {
+  --footer-gray: #a8a8a8;
+  --footer-link: #838383;
+
+  a,
+  a:not(.btn):hover {
     text-decoration: none;
   }
 
-  .footer-content {
-    max-width: var(--grid-container-width);
-    margin: 48px auto;
-    font-size: 14px;
-  }
-
-  .section-legal ul {
+  ul {
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
-  .section-copyright p {
+  li,
+  p {
     margin: 0;
   }
 
+  .footer-content {
+    font-size: 14px;
+  }
+
   .section {
+    > * {
+      color: inherit;
+    }
+
     .default-content {
       max-width: initial;
       margin: initial;
     }
   }
+
+  /* link columns: an accordion until 900px */
+  .footer-main {
+    padding: 20px 0;
+    background-color: #191c1f;
+
+    h2 {
+      margin: 0;
+      font-size: var(--body-font-size-m);
+      font-weight: 800;
+      line-height: 1.25;
+      text-transform: uppercase;
+      color: #fff;
+
+      button {
+        position: relative;
+        width: 100%;
+        min-height: 64px;
+        padding: 0 20px 0 40px;
+        border: 0;
+        background: none;
+        font: inherit;
+        text-align: start;
+        text-transform: inherit;
+        color: inherit;
+
+        &::before {
+          content: ">";
+          position: absolute;
+          left: 20px;
+          font-size: 10px;
+          font-weight: 300;
+          scale: 1 2;
+        }
+
+        &[aria-expanded="true"] {
+          background-color: #000;
+
+          &::before {
+            content: "v";
+            font-size: 9px;
+            scale: 2 1;
+          }
+        }
+      }
+    }
+
+    h2:has(> [aria-expanded="false"]) + ul {
+      display: none;
+    }
+
+    ul {
+      padding: 0 20px;
+      line-height: 41px;
+    }
+
+    li {
+      display: flex;
+
+      &::before {
+        content: "●";
+        margin-inline-end: 10px;
+        font-size: 8px;
+        color: var(--footer-gray);
+      }
+    }
+
+    li a {
+      font-weight: 700;
+      color: var(--footer-link);
+    }
+  }
+
+  /* edition, copyright and legal links */
+  .footer-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    padding: 30px 20px;
+    background-color: #000;
+    font-size: 11px;
+    color: var(--footer-gray);
+
+    :is(.section, .default-content) {
+      display: contents;
+    }
+
+    .section-legal p {
+      flex-basis: 100%;
+      display: flex;
+      justify-content: center;
+      padding-bottom: 20px;
+    }
+
+    .section-legal p a {
+      display: flex;
+      align-items: center;
+      height: 40px;
+      padding-inline: 5px;
+      font-weight: 700;
+      color: var(--footer-link);
+
+      img {
+        width: 20px;
+        height: 20px;
+        margin-inline-end: 10px;
+      }
+
+      &::after {
+        content: "∨";
+        margin-inline-start: 10px;
+        font-size: 10px;
+        color: var(--footer-gray);
+        scale: 2 1;
+      }
+    }
+
+    .section-copyright p {
+      order: 1;
+    }
+
+    /* copyright and legal links wrap as one run of text */
+    ul {
+      display: contents;
+
+      li {
+        order: 2;
+
+        &::before {
+          content: "/";
+          padding: 0 8px;
+        }
+      }
+
+      a {
+        font-weight: 400;
+        color: var(--footer-gray);
+      }
+    }
+  }
+}
+
+@media (width >= 600px) {
+  footer .footer-main li a {
+    font-size: var(--body-font-size-m);
+  }
 }
 
 @media (width >= 900px) {
   footer {
-    margin: 0;
+    --footer-columns-width: 989px;
 
-    .section-legal {
-      display: flex;
-      justify-content: end;
-      gap: var(--spacing-xl);
-      margin-bottom: 24px;
+    .footer-main {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 40px max(0px, (100% - var(--footer-columns-width)) / 2) 20px;
+
+      .section {
+        padding: 0 30px;
+      }
+
+      h2 {
+        margin-bottom: 12px;
+        padding-bottom: 5px;
+        border-bottom: 1px solid var(--footer-gray);
+      }
 
       ul {
-        display: flex;
-        justify-content: end;
-        gap: var(--spacing-xl);
-      }
-
-      li {
-        margin: 0;
+        padding: 0;
       }
     }
 
-    .section-copyright {
-      display: flex;
+    .footer-bar {
+      flex-wrap: nowrap;
       justify-content: end;
-      gap: var(--spacing-xl);
+
+      .section-legal p {
+        flex-basis: auto;
+        margin-inline-end: auto;
+        padding-bottom: 0;
+      }
     }
+  }
+}
+
+@media (width >= 1200px) {
+  footer {
+    --footer-columns-width: 1236px;
   }
 }

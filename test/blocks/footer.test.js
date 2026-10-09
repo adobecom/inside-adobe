@@ -20,8 +20,10 @@ describe('footer source', () => {
   };
 
   beforeEach(() => {
+    fetched = undefined;
     window.fetch = async (path) => {
-      fetched = path;
+      // the first request is the contract; a local-preview fallback may follow
+      fetched ??= path;
       return { ok: false };
     };
   });
