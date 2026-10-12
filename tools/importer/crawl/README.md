@@ -45,7 +45,8 @@ A first test run: `node tools/importer/crawl/crawl.mjs --max 50`.
 
 ## Sharing the result
 
-Share **only the `inside-mirror` folder** (zip it or host it). Do **not** share `.crawl-profile`:
+Share **only the `inside-mirror` folder**, by pushing it to the private mirror repository (never to
+this site repository, which is public). Do **not** share `.crawl-profile`:
 it holds your signed-in browser session. Both folders are git-ignored.
 
 Pages are saved as you see them, so personalized bits (your name, favorites, profile picture) are
