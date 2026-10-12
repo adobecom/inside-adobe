@@ -35,6 +35,11 @@ const DOC = /\.(pdf|docx?|xlsx?|pptx?|zip)$/i;
 const sleep = (ms) => new Promise((r) => { setTimeout(r, ms); });
 const exists = (f) => access(f).then(() => true, () => false);
 
+// Pages are served both as /x.html and /content/inside/en/x.html; crawl the short form,
+// remembering the long one in case the short form 404s
+const LONG = /^\/content\/inside\/en(\.html|\/)/;
+const longForm = {};
+
 // Pages: strip hash and query (listing filters), keep .html or extension-less paths
 function pageUrl(href, base) {
   try {
@@ -44,6 +49,10 @@ function pageUrl(href, base) {
     const last = url.pathname.split('/').pop();
     if (!include.test(url.href) || exclude.test(url.pathname)) return null;
     if (last.includes('.') && !last.endsWith('.html')) return null;
+    const long = url.href;
+    url.pathname = url.pathname.replace(LONG, (m, end) => (end === '/' ? '/' : '/home.html'));
+    if (url.pathname === '/') url.pathname = '/home.html';
+    if (url.href !== long) longForm[url.href] ??= long;
     return url.href;
   } catch { return null; }
 }
@@ -63,7 +72,9 @@ const statePath = join(OUT, 'manifest.json');
 const state = await exists(statePath)
   ? JSON.parse(await readFile(statePath, 'utf8'))
   : { pages: {}, queue: [], assets: {} };
-const seen = new Set([...Object.keys(state.pages), ...state.queue]);
+// re-normalize a queue saved by an earlier version of this script
+state.queue = [...new Set(state.queue.map((u) => pageUrl(u)))].filter((u) => u && !state.pages[u]);
+const seen = new Set([...Object.keys(state.pages).map((u) => pageUrl(u) || u), ...state.queue]);
 const enqueue = (u) => {
   if (!u || seen.has(u)) return;
   seen.add(u);
@@ -108,6 +119,7 @@ async function download(href) {
 
 async function crawl(page, url) {
   const resp = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  if (resp?.status() === 404) return { finalUrl: page.url(), status: 404 };
   await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
   // scroll in steps so lazy images load
   await page.evaluate(async () => {
@@ -170,6 +182,9 @@ const worker = async () => {
       active += 1;
       try {
         state.pages[url] = await crawl(page, url);
+        if (state.pages[url].status === 404 && longForm[url]) {
+          state.pages[url] = await crawl(page, longForm[url]);
+        }
       } catch (e) {
         state.pages[url] = { error: e.message };
       }
