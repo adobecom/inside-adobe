@@ -10,7 +10,7 @@ One row, one cell: a **bold** first paragraph (the title), then the text.
 
 ## Supported variations
 
-No variations.
+- `callout (alert)`: yellow, with a red warning icon.
 
 ## Universal Editor fields
 

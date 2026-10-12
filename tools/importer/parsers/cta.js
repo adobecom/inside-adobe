@@ -15,7 +15,10 @@ export default function parse(element, { document }) {
     h3.textContent = title.textContent.trim();
     cell.push(h3);
   }
-  box.querySelectorAll('p').forEach((p) => { if (!p.contains(button)) cell.push(p); });
+  // paragraphs and lists, in order (outermost only)
+  box.querySelectorAll('p, ul, ol').forEach((n) => {
+    if (!n.parentElement.closest('p, ul, ol') && !n.contains(button)) cell.push(n);
+  });
   if (button) {
     const p = document.createElement('p');
     const strong = document.createElement('strong');

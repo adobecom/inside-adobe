@@ -19,6 +19,7 @@ export default function parse(element, { document }) {
   }
   if (text) cell.push(...text.children);
 
-  const block = WebImporter.Blocks.createBlock(document, { name: 'callout', cells: [[cell]] });
+  const name = element.querySelector('.callout-container.alert') ? 'callout (alert)' : 'callout';
+  const block = WebImporter.Blocks.createBlock(document, { name, cells: [[cell]] });
   element.replaceWith(block);
 }

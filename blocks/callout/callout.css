@@ -50,3 +50,14 @@
     }
   }
 }
+
+/* callout (alert): yellow, with a warning icon */
+.callout.alert {
+  background: #ffeebc;
+
+  > div > div::before {
+    content: "";
+    border-radius: 0;
+    background: url("alert.svg") center / contain no-repeat;
+  }
+}

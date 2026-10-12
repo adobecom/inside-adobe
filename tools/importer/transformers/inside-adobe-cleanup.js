@@ -102,7 +102,8 @@ export default function transform(hookName, element, payload) {
     const content = element.querySelector('.aem-Grid--9') || element;
 
     // Jump-to links to this page -> in-page hashes
-    const page = new URL(payload.params.originalURL).pathname.split('/').pop();
+    const source = payload.params?.originalURL;
+    const page = source ? new URL(source).pathname.split('/').pop() : '';
     content.querySelectorAll('a[href*="#"]').forEach((a) => {
       const [path, id] = a.getAttribute('href').split('#');
       if (anchors[id] && path.endsWith(`/${page}`)) a.setAttribute('href', `#${anchors[id]}`);
@@ -139,6 +140,18 @@ export default function transform(hookName, element, payload) {
       heading.append(...h.childNodes);
       heading.querySelectorAll('b, strong').forEach(unwrap);
       h.replaceWith(heading);
+    });
+
+    // A bold/italic run holding a link plus other text would become a button that swallows the
+    // text (ak.js decorateButton only checks the paragraph); take the link out of the run
+    // (links are bold here anyway). Emphasis inside the link would be merged back by markdown.
+    content.querySelectorAll('strong > a, em > a, b > a, i > a').forEach((a) => {
+      const wrap = a.parentElement;
+      if (wrap.textContent.trim() === a.textContent.trim()) return;
+      const after = wrap.cloneNode(false);
+      while (a.nextSibling) after.append(a.nextSibling);
+      wrap.after(a, after);
+      [wrap, after].forEach((w) => { if (!w.textContent.trim()) w.remove(); });
     });
 
     // Presentational wrappers

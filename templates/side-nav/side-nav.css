@@ -1,0 +1,39 @@
+/* section menu (side-nav block, added by scripts.js) beside the content; above it on mobile */
+.side-nav-template main {
+  --grid-container-width: min(100% - 40px, 1236px);
+
+  display: flex;
+  flex-direction: column;
+
+  > .section:has(> .block-content > .side-nav) {
+    order: -1;
+    max-width: var(--grid-container-width);
+    width: 100%;
+    margin-inline: auto;
+    padding: 0;
+
+    &::before {
+      display: none;
+    }
+  }
+
+  @media (width >= 900px) {
+    display: grid;
+    grid-template-columns: 285px 1fr;
+    column-gap: 24px;
+    align-items: start;
+    max-width: var(--grid-container-width);
+    margin-inline: auto;
+
+    > .section {
+      --grid-container-width: 100%;
+
+      grid-column: 2;
+    }
+
+    > .section:has(> .block-content > .side-nav) {
+      grid-column: 1;
+      grid-row: 1 / span 99;
+    }
+  }
+}

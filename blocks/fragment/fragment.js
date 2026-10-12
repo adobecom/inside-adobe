@@ -100,14 +100,18 @@ export default async function init(a) {
   if (fragment) {
     const elToReplace = getReplaceEl(a);
     const sections = fragment.querySelectorAll(':scope > .section');
-    const children = sections.length === 1
+    // Replacing a whole section: the fragment's sections take its place as page sections
+    // (a wrapper there would be a bare `main > div`, which the base styles hide)
+    const children = sections.length === 1 || elToReplace.classList.contains('section')
       ? fragment.querySelectorAll(':scope > *')
       : [fragment];
+    let prev = elToReplace;
     for (const [idx, child] of children.entries()) {
       // If relative, create a unique ID to help fragments
       // be identified after being inserted into the page
       if (path.startsWith('/')) child.id = btoa(encodeURIComponent(`${path}/${idx + 1}`));
-      elToReplace.insertAdjacentElement('afterend', child);
+      prev.insertAdjacentElement('afterend', child);
+      prev = child;
     }
     elToReplace.remove();
   }
