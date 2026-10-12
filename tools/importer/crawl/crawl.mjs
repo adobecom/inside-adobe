@@ -200,6 +200,15 @@ const worker = async () => {
 };
 
 await Promise.all(Array.from({ length: Number(opts.concurrency) }, worker));
+if (opts['with-docs']) {
+  // documents linked from pages saved in earlier runs
+  const docs = new Set(Object.values(state.pages).flatMap((p) => p.docs || []));
+  const { host } = new URL(opts.start[0]);
+  for (const d of [...docs].filter((u) => new URL(u).host === host)) {
+    await download(d);
+    if (state.assets[d] !== 'ok') console.log(`FAILED ${d} (${state.assets[d]})`);
+  }
+}
 await persist();
 await context.close();
 const pages = Object.values(state.pages);
