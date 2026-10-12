@@ -1,0 +1,21 @@
+{
+  "variantName": "article-meta",
+  "baseBlock": "custom",
+  "canonicalModel": "standalone",
+  "visualCharacteristics": {
+    "layout": "tag pills in a row, date below",
+    "imageTreatment": "none",
+    "colorScheme": "pink collection tag, outlined topic tags, gray bold date",
+    "density": "low"
+  },
+  "contentPattern": "Row 1: collection tag link | topic tag link(s); row 2: date",
+  "usage": {
+    "pagesUsing": [
+      "http://127.0.0.1:8765/cybersecurity-awareness-month-2026.html"
+    ],
+    "reuseCount": 0,
+    "lastUsed": "2026-10-09T00:00:00.000Z"
+  },
+  "options": [],
+  "memberVariantIds": []
+}

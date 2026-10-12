@@ -1,0 +1,21 @@
+{
+  "variantName": "columns-aside",
+  "baseBlock": "columns",
+  "canonicalModel": "standalone",
+  "visualCharacteristics": {
+    "layout": "2fr / 1fr columns at 900px and up, stacked below",
+    "imageTreatment": "none",
+    "colorScheme": "aside is a light gray boxed note",
+    "density": "medium"
+  },
+  "contentPattern": "One row, two cells: main text | boxed note (H3 + paragraphs)",
+  "usage": {
+    "pagesUsing": [
+      "http://127.0.0.1:8765/adobe-research.html"
+    ],
+    "reuseCount": 0,
+    "lastUsed": "2026-10-09T00:00:00.000Z"
+  },
+  "options": [],
+  "memberVariantIds": []
+}

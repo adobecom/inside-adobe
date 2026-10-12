@@ -11,19 +11,9 @@
  */
 const TransformHook = { beforeTransform: 'beforeTransform', afterTransform: 'afterTransform' };
 
-const PAGE_URL = 'inside.corp.adobe.com/content/inside/en/about-adobe/adobe-mission-and-plan.html';
-
-// Source jump-link anchors -> Edge Delivery auto-generated heading ids
-const JUMP_IDS = {
-  onepage: 'adobes-mission--plan--all-on-one-page',
-  mission: 'our-mission',
-  values: 'our-company-values',
-  what: 'what-we-do',
-  audience: 'our-audience-strategy',
-  wins: 'fy26-must-wins',
-  videos: 'videos',
-  resources: 'resources',
-};
+// Jump-link anchor ids (<h4><a id="x"></a>Title</h4>) -> Edge Delivery heading ids, per page
+let anchors = {};
+const slug = (text) => text.trim().replace(/\s+/g, ' ').toLowerCase().replace(/[^\p{L}\p{N} _-]/gu, '').replace(/ /g, '-');
 
 // AEM-internal metadata that must not be carried over
 const DROP_META = ['content-page-ref', 'template', 'pageType', 'geography', 'geo.region', 'geo.placename', 'role', 'businessunit', 'theme-color', 'robots'];
@@ -36,6 +26,13 @@ export default function transform(hookName, element, payload) {
   const doc = (payload && payload.document) || element.ownerDocument;
 
   if (hookName === TransformHook.beforeTransform) {
+    // the importer strips empty anchors before transforming, so read them from the raw page
+    anchors = {};
+    const raw = new DOMParser().parseFromString(payload.html, 'text/html');
+    raw.querySelectorAll('h1 a[id], h2 a[id], h3 a[id], h4 a[id], h5 a[id], h6 a[id]').forEach((a) => {
+      if (!a.getAttribute('href')) anchors[a.id] = slug(a.closest('h1, h2, h3, h4, h5, h6').textContent);
+    });
+
     // Metadata: strip the site suffix from the title and drop AEM-internal meta tags
     if (doc.title) doc.title = doc.title.replace(/\s*\|\s*Inside Adobe\s*$/i, '').trim();
     DROP_META.forEach((name) => {
@@ -67,6 +64,12 @@ export default function transform(hookName, element, payload) {
       '.falcon-side-nav',
       '.sidenav.aem-GridColumn',
       '#my-favorite-button',
+      '.socialshare',
+      'div.alert.aem-GridColumn', // site-wide alert bar (hidden)
+      '.xfreference:has(.stock)', // live stock quote
+      '.xfreference:has(.topuserfavorites)', // personalized favorites
+      '.articlecontent .hide', // hidden role / business-unit tags
+      '.analytics-article-type',
       '.favorite-btn',
       '.modalContainer',
       '.edition-selection-popup',
@@ -98,12 +101,31 @@ export default function transform(hookName, element, payload) {
 
     const content = element.querySelector('.aem-Grid--9') || element;
 
-    // Jump-to links -> in-page hashes
+    // Jump-to links to this page -> in-page hashes
+    const page = new URL(payload.params.originalURL).pathname.split('/').pop();
     content.querySelectorAll('a[href*="#"]').forEach((a) => {
-      const href = a.getAttribute('href');
-      if (!href.includes(PAGE_URL)) return;
-      const id = href.split('#')[1];
-      if (JUMP_IDS[id]) a.setAttribute('href', `#${JUMP_IDS[id]}`);
+      const [path, id] = a.getAttribute('href').split('#');
+      if (anchors[id] && path.endsWith(`/${page}`)) a.setAttribute('href', `#${anchors[id]}`);
+    });
+
+    // Spectrum CTA buttons in default content -> bold link (primary button)
+    content.querySelectorAll('a.spectrum-Button').forEach((btn) => {
+      const p = doc.createElement('p');
+      const strong = doc.createElement('strong');
+      const a = doc.createElement('a');
+      a.href = btn.getAttribute('href');
+      a.textContent = btn.textContent.trim();
+      strong.append(a);
+      p.append(strong);
+      (btn.closest('.cta.aem-GridColumn, .dexter-Cta') || btn).replaceWith(p);
+    });
+
+    // Outlook click-tracking (and SharePoint share tokens) on links copied from email
+    content.querySelectorAll('a[href*="xsdata="], a[href*="clickparams="]').forEach((a) => {
+      const url = new URL(a.getAttribute('href'));
+      ['xsdata', 'sdata', 'clickparams'].forEach((p) => url.searchParams.delete(p));
+      if (url.hostname.endsWith('sharepoint.com')) url.searchParams.delete('e');
+      a.setAttribute('href', url.href);
     });
 
     // Empty <a id="..."></a> anchors inside headings
@@ -111,11 +133,12 @@ export default function transform(hookName, element, payload) {
       if (!a.getAttribute('href') && !a.textContent.trim()) a.remove();
     });
 
-    // Promote H4 topic headings to H2 (main content column only)
-    content.querySelectorAll('h4').forEach((h4) => {
-      const h2 = doc.createElement('h2');
-      h2.append(...h4.childNodes);
-      h4.replaceWith(h2);
+    // Promote H4 topic / H5 group headings to H2 / H3 (main content column only)
+    content.querySelectorAll('h4, h5').forEach((h) => {
+      const heading = doc.createElement(h.tagName === 'H4' ? 'h2' : 'h3');
+      heading.append(...h.childNodes);
+      heading.querySelectorAll('b, strong').forEach(unwrap);
+      h.replaceWith(heading);
     });
 
     // Presentational wrappers

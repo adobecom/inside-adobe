@@ -1,0 +1,21 @@
+{
+  "variantName": "events",
+  "baseBlock": "custom",
+  "canonicalModel": "standalone",
+  "visualCharacteristics": {
+    "layout": "heading + button, then dated rows",
+    "imageTreatment": "none",
+    "colorScheme": "gray date chip, light gray row",
+    "density": "medium"
+  },
+  "contentPattern": "Row 1: heading | bold link; then rows: date | location | linked title",
+  "usage": {
+    "pagesUsing": [
+      "http://127.0.0.1:8765/home.html"
+    ],
+    "reuseCount": 0,
+    "lastUsed": "2026-10-09T00:00:00.000Z"
+  },
+  "options": [],
+  "memberVariantIds": []
+}
