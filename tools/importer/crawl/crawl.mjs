@@ -72,6 +72,10 @@ const statePath = join(OUT, 'manifest.json');
 const state = await exists(statePath)
   ? JSON.parse(await readFile(statePath, 'utf8'))
   : { pages: {}, queue: [], assets: {} };
+// Keep errors to their first line: Playwright appends the request, cookies included
+const brief = (msg) => String(msg).split('\n')[0].slice(0, 160);
+Object.entries(state.assets).forEach(([k, v]) => { state.assets[k] = brief(v); });
+Object.values(state.pages).forEach((p) => { if (p.error) p.error = brief(p.error); });
 // re-normalize a queue saved by an earlier version of this script
 state.queue = [...new Set(state.queue.map((u) => pageUrl(u)))].filter((u) => u && !state.pages[u]);
 const seen = new Set([...Object.keys(state.pages).map((u) => pageUrl(u) || u), ...state.queue]);
@@ -124,8 +128,8 @@ async function download(href) {
     state.assets[href] = 'ok';
     return 'exists';
   }
-  const failed = (e) => ({ ok: () => false, status: () => e.message });
-  const resp = await context.request.get(href).catch(failed);
+  const failed = (e) => ({ ok: () => false, status: () => brief(e.message) });
+  const resp = await context.request.get(href, { timeout: 180000 }).catch(failed);
   state.assets[href] = resp.ok() ? 'ok' : `error ${resp.status()}`;
   if (!resp.ok()) return state.assets[href];
   await save(file, await resp.body());
@@ -201,7 +205,7 @@ const worker = async () => {
           state.pages[url] = await crawl(page, longForm[url]);
         }
       } catch (e) {
-        state.pages[url] = { error: e.message };
+        state.pages[url] = { error: brief(e.message) };
       }
       active -= 1;
       const done = Object.keys(state.pages).length;
