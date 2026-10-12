@@ -83,6 +83,7 @@ const enqueue = (u) => {
 const persist = () => save(statePath, JSON.stringify(state, null, 1));
 
 const { headless } = opts;
+console.log(`Opening Chrome, checking sign-in at ${opts.start[0]} ...`);
 const context = await chromium.launchPersistentContext(opts.profile, { headless, channel: 'chrome' })
   .catch(() => chromium.launchPersistentContext(opts.profile, { headless }));
 
@@ -94,27 +95,41 @@ if (!include.test(first.url()) || await first.locator('input[type="password"]').
   await rl.question('Sign in to the intranet in the browser window, then press Enter here... ');
   rl.close();
 }
+console.log('Signed in.');
 
-if (!state.queue.length && !Object.keys(state.pages).length) {
+const saved = Object.keys(state.pages).length;
+if (!saved) {
   const sitemap = await context.request.get(new URL('/sitemap.xml', opts.start[0]).href).catch(() => null);
   const xml = sitemap?.ok() ? await sitemap.text() : '';
   [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].forEach(([, loc]) => enqueue(pageUrl(loc.trim())));
-  if (opts.urls) (await readFile(opts.urls, 'utf8')).split(/\s+/).forEach((u) => enqueue(pageUrl(u)));
-  opts.start.forEach((u) => enqueue(pageUrl(u)));
-  console.log(`Seeded ${state.queue.length} URLs${xml ? ' (sitemap found)' : ''}`);
+  console.log(xml ? 'Sitemap found' : 'No sitemap; following links from the start page');
 }
+if (opts.urls) (await readFile(opts.urls, 'utf8')).split(/\s+/).forEach((u) => enqueue(pageUrl(u)));
+opts.start.forEach((u) => enqueue(pageUrl(u)));
+console.log(saved
+  ? `Resuming: ${saved} pages already saved, ${state.queue.length} to crawl`
+  : `Starting: ${state.queue.length} URLs to crawl`);
 
+// Ctrl+C: save progress first, so the next run resumes from here
+process.on('SIGINT', async () => {
+  console.log('\nStopping; saving progress...');
+  await persist();
+  process.exit(130);
+});
+
+// returns 'saved', 'exists', or an error; failed downloads are retried on the next run
 async function download(href) {
-  if (state.assets[href]) return;
   const file = filePath(href);
-  if (await exists(file)) {
+  if (state.assets[href] === 'ok' || await exists(file)) {
     state.assets[href] = 'ok';
-    return;
+    return 'exists';
   }
   const failed = (e) => ({ ok: () => false, status: () => e.message });
   const resp = await context.request.get(href).catch(failed);
   state.assets[href] = resp.ok() ? 'ok' : `error ${resp.status()}`;
-  if (resp.ok()) await save(file, await resp.body());
+  if (!resp.ok()) return state.assets[href];
+  await save(file, await resp.body());
+  return 'saved';
 }
 
 async function crawl(page, url) {
@@ -202,14 +217,25 @@ const worker = async () => {
 await Promise.all(Array.from({ length: Number(opts.concurrency) }, worker));
 if (opts['with-docs']) {
   // documents linked from pages saved in earlier runs
-  const docs = new Set(Object.values(state.pages).flatMap((p) => p.docs || []));
   const { host } = new URL(opts.start[0]);
-  for (const d of [...docs].filter((u) => new URL(u).host === host)) {
-    await download(d);
-    if (state.assets[d] !== 'ok') console.log(`FAILED ${d} (${state.assets[d]})`);
+  const docs = [...new Set(Object.values(state.pages).flatMap((p) => p.docs || []))]
+    .filter((u) => new URL(u).host === host);
+  console.log(`Documents: ${docs.length} linked from saved pages`);
+  const count = { saved: 0, exists: 0, failed: 0 };
+  for (const [i, d] of docs.entries()) {
+    const result = await download(d);
+    const key = ['saved', 'exists'].includes(result) ? result : 'failed';
+    count[key] += 1;
+    const n = `[${i + 1}/${docs.length}]`;
+    if (key === 'saved') console.log(`${n} saved  ${d}`);
+    if (key === 'failed') console.log(`${n} FAILED ${d} (${result})`);
+    if (key === 'exists' && (i + 1) % 50 === 0) console.log(`${n} ...`);
+    if ((i + 1) % 25 === 0) await persist();
   }
+  console.log(`Documents: ${count.saved} downloaded, ${count.exists} already saved, ${count.failed} failed`);
 }
 await persist();
 await context.close();
 const pages = Object.values(state.pages);
-console.log(`Done: ${pages.filter((p) => !p.error).length} pages saved, ${pages.filter((p) => p.error).length} failed, ${Object.keys(state.assets).length} assets. Manifest: ${statePath}`);
+const ok = pages.filter((p) => p.status === 200).length;
+console.log(`Done: ${ok} pages saved, ${pages.length - ok} failed or not found, ${Object.keys(state.assets).length} files. Manifest: ${statePath}`);
