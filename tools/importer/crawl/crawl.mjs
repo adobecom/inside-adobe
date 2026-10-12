@@ -1,0 +1,191 @@
+/* eslint-disable no-console */
+/**
+ * Mirror the Inside Adobe intranet for migration: run on a signed-in machine (see README.md).
+ * Saves each page as rendered, plus its images and stylesheets, under --out at the URL's path,
+ * and writes manifest.json (one entry per page). Re-running resumes where it stopped.
+ */
+import { mkdir, readFile, writeFile, access } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import { createInterface } from 'node:readline/promises';
+import { parseArgs } from 'node:util';
+// eslint-disable-next-line import/no-unresolved
+import { chromium } from 'playwright';
+
+const { values: opts } = parseArgs({
+  options: {
+    start: { type: 'string', multiple: true, default: ['https://inside.corp.adobe.com/home.html'] },
+    urls: { type: 'string' },
+    out: { type: 'string', default: 'inside-mirror' },
+    profile: { type: 'string', default: '.crawl-profile' },
+    include: { type: 'string', default: '^https://inside\\.corp\\.adobe\\.com/' },
+    exclude: { type: 'string', default: '/(search|profile|login|bin|libs|etc|apps|system)[/.]|/content/dam/' },
+    max: { type: 'string', default: '5000' },
+    concurrency: { type: 'string', default: '2' },
+    delay: { type: 'string', default: '300' },
+    'with-docs': { type: 'boolean', default: false },
+    'no-follow': { type: 'boolean', default: false },
+    headless: { type: 'boolean', default: false },
+  },
+});
+
+const OUT = opts.out;
+const include = new RegExp(opts.include);
+const exclude = new RegExp(opts.exclude);
+const DOC = /\.(pdf|docx?|xlsx?|pptx?|zip)$/i;
+const sleep = (ms) => new Promise((r) => { setTimeout(r, ms); });
+const exists = (f) => access(f).then(() => true, () => false);
+
+// Pages: strip hash and query (listing filters), keep .html or extension-less paths
+function pageUrl(href, base) {
+  try {
+    const url = new URL(href, base);
+    url.hash = '';
+    url.search = '';
+    const last = url.pathname.split('/').pop();
+    if (!include.test(url.href) || exclude.test(url.pathname)) return null;
+    if (last.includes('.') && !last.endsWith('.html')) return null;
+    return url.href;
+  } catch { return null; }
+}
+
+function filePath(href) {
+  const { pathname } = new URL(href);
+  const path = pathname.endsWith('/') ? `${pathname}index.html` : pathname;
+  return join(OUT, decodeURIComponent(path));
+}
+
+async function save(file, data) {
+  await mkdir(dirname(file), { recursive: true });
+  await writeFile(file, data);
+}
+
+const statePath = join(OUT, 'manifest.json');
+const state = await exists(statePath)
+  ? JSON.parse(await readFile(statePath, 'utf8'))
+  : { pages: {}, queue: [], assets: {} };
+const seen = new Set([...Object.keys(state.pages), ...state.queue]);
+const enqueue = (u) => {
+  if (!u || seen.has(u)) return;
+  seen.add(u);
+  state.queue.push(u);
+};
+const persist = () => save(statePath, JSON.stringify(state, null, 1));
+
+const { headless } = opts;
+const context = await chromium.launchPersistentContext(opts.profile, { headless, channel: 'chrome' })
+  .catch(() => chromium.launchPersistentContext(opts.profile, { headless }));
+
+// Sign in once in the window; the session stays in the --profile folder on this machine
+const first = context.pages()[0] || await context.newPage();
+await first.goto(opts.start[0], { waitUntil: 'domcontentloaded' });
+if (!include.test(first.url()) || await first.locator('input[type="password"]').count()) {
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  await rl.question('Sign in to the intranet in the browser window, then press Enter here... ');
+  rl.close();
+}
+
+if (!state.queue.length && !Object.keys(state.pages).length) {
+  const sitemap = await context.request.get(new URL('/sitemap.xml', opts.start[0]).href).catch(() => null);
+  const xml = sitemap?.ok() ? await sitemap.text() : '';
+  [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].forEach(([, loc]) => enqueue(pageUrl(loc.trim())));
+  if (opts.urls) (await readFile(opts.urls, 'utf8')).split(/\s+/).forEach((u) => enqueue(pageUrl(u)));
+  opts.start.forEach((u) => enqueue(pageUrl(u)));
+  console.log(`Seeded ${state.queue.length} URLs${xml ? ' (sitemap found)' : ''}`);
+}
+
+async function download(href) {
+  if (state.assets[href]) return;
+  const file = filePath(href);
+  if (await exists(file)) {
+    state.assets[href] = 'ok';
+    return;
+  }
+  const failed = (e) => ({ ok: () => false, status: () => e.message });
+  const resp = await context.request.get(href).catch(failed);
+  state.assets[href] = resp.ok() ? 'ok' : `error ${resp.status()}`;
+  if (resp.ok()) await save(file, await resp.body());
+}
+
+async function crawl(page, url) {
+  const resp = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
+  // scroll in steps so lazy images load
+  await page.evaluate(async () => {
+    for (let y = 0; y < document.body.scrollHeight; y += 600) {
+      window.scrollTo(0, y);
+      await new Promise((r) => { setTimeout(r, 100); });
+    }
+  });
+  await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+
+  const finalUrl = page.url();
+  const info = await page.evaluate(() => {
+    const meta = (n) => document.querySelector(`meta[name="${n}"]`)?.content || '';
+    const urls = new Set();
+    document.querySelectorAll('img, source').forEach((el) => {
+      ['src', 'data-src'].forEach((a) => el.getAttribute(a) && urls.add(el.getAttribute(a)));
+      (el.getAttribute('srcset') || '').split(',').forEach((s) => s.trim() && urls.add(s.trim().split(/\s+/)[0]));
+    });
+    document.querySelectorAll('link[rel="stylesheet"]').forEach((l) => urls.add(l.getAttribute('href')));
+    document.querySelectorAll('[style*="url("]').forEach((el) => {
+      [...el.getAttribute('style').matchAll(/url\(["']?([^"')]+)/g)].forEach(([, u]) => urls.add(u));
+    });
+    return {
+      title: document.title,
+      template: meta('template'),
+      pageType: meta('pageType'),
+      publishDate: meta('articlePublishDate'),
+      links: [...document.querySelectorAll('a[href]')].map((a) => a.href),
+      assets: [...urls].map((u) => new URL(u, document.baseURI).href),
+    };
+  });
+
+  const file = filePath(finalUrl.endsWith('.html') || finalUrl.endsWith('/') ? finalUrl : `${finalUrl}.html`);
+  await save(file, await page.content());
+  const sameHost = (u) => new URL(u).host === new URL(finalUrl).host;
+  for (const a of info.assets.filter(sameHost)) await download(a);
+  const docs = [...new Set(info.links.filter((l) => DOC.test(new URL(l).pathname)))];
+  if (opts['with-docs']) for (const d of docs.filter(sameHost)) await download(d);
+  if (!opts['no-follow']) info.links.forEach((l) => enqueue(pageUrl(l)));
+
+  return {
+    finalUrl,
+    status: resp?.status(),
+    title: info.title,
+    template: info.template,
+    pageType: info.pageType,
+    publishDate: info.publishDate,
+    file,
+    docs,
+  };
+}
+
+const max = Number(opts.max);
+let active = 0;
+const worker = async () => {
+  const page = await context.newPage();
+  while ((state.queue.length || active) && Object.keys(state.pages).length < max) {
+    const url = state.queue.shift();
+    if (url) {
+      active += 1;
+      try {
+        state.pages[url] = await crawl(page, url);
+      } catch (e) {
+        state.pages[url] = { error: e.message };
+      }
+      active -= 1;
+      const done = Object.keys(state.pages).length;
+      console.log(`[${done}] ${state.pages[url].error ? 'FAILED' : 'saved '} ${url} (${state.queue.length} queued)`);
+      if (done % 10 === 0) await persist();
+    }
+    // with an empty queue, wait: other workers may still be adding links
+    await sleep(url ? Number(opts.delay) : 500);
+  }
+  await page.close();
+};
+
+await Promise.all(Array.from({ length: Number(opts.concurrency) }, worker));
+await persist();
+await context.close();
+const pages = Object.values(state.pages);
+console.log(`Done: ${pages.filter((p) => !p.error).length} pages saved, ${pages.filter((p) => p.error).length} failed, ${Object.keys(state.assets).length} assets. Manifest: ${statePath}`);
