@@ -25,6 +25,7 @@ const { values: opts } = parseArgs({
     'with-docs': { type: 'boolean', default: false },
     'no-follow': { type: 'boolean', default: false },
     headless: { type: 'boolean', default: false },
+    'news-archive': { type: 'boolean', default: false },
   },
 });
 
@@ -109,6 +110,32 @@ if (!saved) {
   console.log(xml ? 'Sitemap found' : 'No sitemap; following links from the start page');
 }
 if (opts.urls) (await readFile(opts.urls, 'utf8')).split(/\s+/).forEach((u) => enqueue(pageUrl(u)));
+
+// The news listing pages through this feed (format from the site's own script); older articles
+// are only reachable through it. Raw responses are kept in _feeds/ for checking.
+if (opts['news-archive']) {
+  const found = new Set();
+  const ARTICLE = /"(?:https?:\/\/[^"/]+)?(\/(?:content\/inside\/en\/)?news\/\d{4}\/[^"?#]+?)(?:\.html)?"/g;
+  let start = 0;
+  for (;;) {
+    const feed = new URL(`/services/news.articles.ro_.bu_.all_true.st_${start}.li_50.json`, opts.start[0]).href;
+    const resp = await context.request.get(feed, { timeout: 60000 }).catch(() => null);
+    if (!resp?.ok()) {
+      console.log(`News archive: feed stopped at ${start} (${resp ? resp.status() : 'no response'})`);
+      break;
+    }
+    const text = (await resp.text()).replaceAll('\\/', '/');
+    await save(join(OUT, '_feeds', `news-st_${start}.json`), text);
+    const batch = new Set([...text.matchAll(ARTICLE)].map(([, p]) => `${p}.html`));
+    if (!batch.size) break;
+    batch.forEach((p) => found.add(p));
+    start += batch.size;
+    console.log(`News archive: ${found.size} articles listed`);
+  }
+  const before = state.queue.length;
+  found.forEach((p) => enqueue(pageUrl(p, opts.start[0])));
+  console.log(`News archive: ${found.size} articles in the feed, ${state.queue.length - before} not crawled yet`);
+}
 opts.start.forEach((u) => enqueue(pageUrl(u)));
 console.log(saved
   ? `Resuming: ${saved} pages already saved, ${state.queue.length} to crawl`

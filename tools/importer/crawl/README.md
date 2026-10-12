@@ -40,6 +40,7 @@ Useful options:
 | `--concurrency <n>` | `2` | Pages loaded at once; keep it low to be polite |
 | `--with-docs` | off | Also download linked PDFs and Office files from the DAM (works on a finished crawl too: re-run with it to fetch just the documents) |
 | `--no-follow` | off | Only crawl the start URLs / list, don't follow links |
+| `--news-archive` | off | Page through the news listing's feed and crawl every article in it, including ones nothing links to; raw feed responses go in `_feeds/` |
 
 A first test run: `node tools/importer/crawl/crawl.mjs --max 50`.
 
