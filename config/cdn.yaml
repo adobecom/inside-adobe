@@ -1,0 +1,19 @@
+kind: "CDN"
+version: "1"
+metadata:
+  envTypes: ["prod"]
+data:
+  originSelectors:
+    rules:
+      - name: eds-origin-rule
+        when:
+          reqProperty: domain
+          equals: "preview.inside.adobe.com"
+        action:
+          type: selectOrigin
+          originName: eds-origin
+          headers:
+            Authorization: "${{HLX_TOKEN}}"
+    origins:
+      - name: eds-origin
+        domain: "main--inside-adobe--adobecom.aem.live"
