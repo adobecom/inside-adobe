@@ -1,0 +1,195 @@
+.event {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  max-width: var(--grid-container-width);
+  margin: 20px auto;
+  background: #f4f6fa;
+
+  .event-head {
+    display: contents;
+  }
+
+  .event-chip {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+    height: 70px;
+    margin: 0;
+    padding-left: 12px;
+    background: #ecedf2;
+    font-weight: 800;
+
+    span:first-child {
+      color: #626262;
+      font-size: var(--body-font-size-s);
+      line-height: 13px;
+      text-transform: uppercase;
+    }
+
+    span:nth-child(2) {
+      font-size: 36px;
+      line-height: 32px;
+    }
+
+    span:nth-child(3) {
+      font-size: var(--body-font-size-xs);
+      line-height: 14px;
+    }
+  }
+
+  .event-copy {
+    place-self: center start;
+    width: 42px;
+    height: 42px;
+    margin-left: 15px;
+    padding: 0;
+    border: 0;
+    background: url("copy.svg") center / contain no-repeat;
+
+    &.is-copied::after {
+      content: "Copied";
+      margin-left: 48px;
+      font-size: var(--body-font-size-xs);
+    }
+  }
+
+  /* after the details on mobile; beside the date chip on desktop */
+  .event-calendar {
+    grid-area: 3 / 1 / auto / -1;
+    justify-self: start;
+    margin: 0 20px 20px;
+    border-color: #747474;
+    color: var(--color-text);
+  }
+
+  .event-body {
+    grid-column: 1 / -1;
+    padding: 20px;
+    font-size: var(--body-font-size-s);
+    line-height: 20px;
+
+    > div {
+      margin: 0;
+    }
+
+    p {
+      margin: 0;
+    }
+  }
+
+  .event-type {
+    color: #626262;
+    font-size: var(--body-font-size-xs);
+    font-weight: 700;
+    line-height: 18px;
+    text-transform: uppercase;
+  }
+
+  .event-body > .event-region {
+    margin: 10px 0;
+    font-style: italic;
+  }
+
+  .event-title :is(h1, h2) {
+    margin: 0;
+    font-size: var(--heading-font-size-l);
+    font-weight: 900;
+    line-height: 30px;
+  }
+
+  .event-icon::before {
+    content: "";
+    display: inline-block;
+    width: 15px;
+    height: 18px;
+    margin-right: 8px;
+    vertical-align: -3px;
+    background: center / contain no-repeat;
+  }
+
+  .event-icon {
+    display: flex;
+    align-items: baseline;
+  }
+
+  .event-icon-clock::before {
+    background-image: url("clock.svg");
+  }
+
+  .event-icon-location::before {
+    background-image: url("location.svg");
+  }
+
+  .event-icon-link::before {
+    background-image: url("link.svg");
+  }
+
+  .event-link a {
+    font-weight: 400;
+  }
+
+  .event-body > .event-details {
+    margin-top: 20px;
+    font-size: var(--body-font-size-m);
+    line-height: 24px;
+
+    p {
+      margin-block: 20px;
+    }
+
+    > :first-child {
+      margin-top: 0;
+    }
+  }
+
+  @media (width >= 900px) {
+    grid-template-columns: 120px auto 1fr;
+
+    .event-chip {
+      height: 120px;
+      padding-left: 27px;
+
+      span:first-child {
+        font-size: var(--body-font-size-m);
+        line-height: 27px;
+      }
+
+      span:nth-child(2) {
+        font-size: 48px;
+        line-height: 27px;
+      }
+
+      span:nth-child(3) {
+        margin-top: 6px;
+        font-size: var(--body-font-size-s);
+      }
+    }
+
+    .event-copy {
+      margin-left: 20px;
+    }
+
+    .event-calendar {
+      grid-area: 1 / 3;
+      place-self: center end;
+      margin: 0 40px 0 0;
+    }
+
+    .event-body {
+      padding: 30px 40px 40px;
+      font-size: var(--body-font-size-m);
+      line-height: 24px;
+    }
+
+    .event-title :is(h1, h2) {
+      font-size: var(--heading-font-size-xl);
+      line-height: 36px;
+    }
+
+    .event-body > .event-details {
+      font-size: var(--body-font-size-xl);
+      line-height: 30px;
+    }
+  }
+}

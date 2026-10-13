@@ -2,22 +2,31 @@
 /* global WebImporter */
 /**
  * Parser for card-resource. Base: card (custom, no library convention).
- * Source: http://127.0.0.1:8765/adobe-mission-and-plan.html
  * One block per .boxtextandimage: single row, single cell holding the H3 title,
- * the image (href-less wrapper anchor dropped), then the description content.
+ * the image and the description content, in source order. An image wrapped in
+ * a real link keeps the link; href-less wrapper anchors are dropped.
  */
 export default function parse(element, { document }) {
   const title = element.querySelector('h3.image-text-header, .image-text-header, h3');
   const img = element.querySelector('.image-ctr img, img');
   const description = element.querySelector('.image-text-description');
 
-  const cell = [];
+  let heading;
   if (title) {
-    const h3 = document.createElement('h3');
-    h3.textContent = title.textContent.trim();
-    cell.push(h3);
+    heading = document.createElement('h3');
+    heading.textContent = title.textContent.trim();
   }
-  if (img) cell.push(img);
+  // read source order before the image is moved into a new link
+  const imageFirst = img && title && (img.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING);
+  let media = img;
+  const link = img?.closest('a[href]');
+  if (img && link) {
+    media = document.createElement('a');
+    media.href = link.getAttribute('href');
+    media.append(img);
+  }
+
+  const cell = (imageFirst ? [media, heading] : [heading, media]).filter(Boolean);
   if (description) cell.push(...description.children);
 
   if (!cell.length) {

@@ -13,3 +13,7 @@ helix-importer-ui
 docs/adr/0000-own-the-page-lifecycle.spicy.md
 migration-work/navigation-validation/
 migration-work/footer-validation/
+
+# intranet crawl output and signed-in browser profile
+inside-mirror/
+.crawl-profile/

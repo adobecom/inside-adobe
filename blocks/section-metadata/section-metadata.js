@@ -87,7 +87,21 @@ async function handleLayout(text, section, type) {
   section.classList.add(`${type}-${text}`);
 }
 
+// style: collapsible: the first heading becomes the toggle, everything after it collapses
+function decorateCollapsible(section) {
+  const heading = section.querySelector(':scope > .default-content > :is(h2, h3, h4):first-child');
+  if (!heading) return;
+  const summary = document.createElement('summary');
+  summary.append(heading);
+  const details = document.createElement('details');
+  details.append(summary, ...section.children);
+  section.append(details);
+  const target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
+  if (target && details.contains(target)) details.open = true;
+}
+
 export default async function init(section) {
+  if (section.classList.contains('collapsible')) decorateCollapsible(section);
   const {
     grid,
     gap,

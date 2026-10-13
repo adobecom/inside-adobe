@@ -1,0 +1,63 @@
+.accordion {
+  position: relative;
+  max-width: var(--grid-container-width);
+  margin-inline: auto;
+
+  .accordion-toggle {
+    position: absolute;
+    inset: -29px 0 auto auto;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-link);
+    font-size: 14px;
+    line-height: 21px;
+  }
+
+  details {
+    padding: 15px;
+    border-top: 1px solid #d3d3d3;
+
+    &:last-child {
+      border-bottom: 1px solid #d3d3d3;
+    }
+  }
+
+  summary {
+    position: relative;
+    display: block;
+    padding-left: 26px;
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 24px;
+    cursor: pointer;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 8px auto auto 4px;
+      width: 6px;
+      height: 6px;
+      border: solid currentcolor;
+      border-width: 2px 2px 0 0;
+      rotate: 45deg;
+    }
+
+    &:hover {
+      color: var(--color-link);
+    }
+  }
+
+  [open] > summary::before {
+    inset-block-start: 6px;
+    rotate: 135deg;
+  }
+
+  .accordion-panel {
+    padding: 30px 45px;
+
+    > :first-child {
+      margin-top: -7px;
+    }
+  }
+}

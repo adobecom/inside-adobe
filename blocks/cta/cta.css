@@ -1,0 +1,25 @@
+.cta {
+  max-width: var(--grid-container-width);
+  margin-inline: auto;
+  padding: 20px;
+  box-sizing: border-box;
+  border-radius: 4px;
+  background: #eaebf0;
+
+  h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 30px;
+  }
+
+  p {
+    margin: 10px 0 0;
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  p:has(.btn) {
+    margin-top: 20px;
+  }
+}

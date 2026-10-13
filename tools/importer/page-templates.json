@@ -64,7 +64,7 @@
         },
         {
           "id": "3",
-          "name": "Mission & Plan — all on one page",
+          "name": "Mission & Plan \u2014 all on one page",
           "selector": [
             ".aem-Grid--9 > .text:nth-of-type(9)"
           ],
@@ -167,6 +167,254 @@
           ],
           "defaultContent": [
             ".aem-Grid--9 > .text:nth-of-type(45)"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "adobe-research",
+      "urls": [
+        "http://127.0.0.1:8765/adobe-research.html"
+      ],
+      "representativeUrl": "http://127.0.0.1:8765/adobe-research.html",
+      "description": "Inside Adobe about-page: H1, text with boxed note, three resource cards (one video), H2 topic with boxed note, call-to-action box.",
+      "blocks": [
+        {
+          "name": "columns-aside",
+          "instances": [
+            ".aem-Grid--9 > .flex:nth-of-type(3)",
+            ".aem-Grid--9 > .flex:nth-of-type(8)"
+          ]
+        },
+        {
+          "name": "card-resource",
+          "instances": [
+            ".aem-Grid--9 > .flex:nth-of-type(5) .boxtextandimage"
+          ]
+        },
+        {
+          "name": "card-resource-video",
+          "instances": [
+            ".aem-Grid--9 > .flex:nth-of-type(5) .thumbnail"
+          ]
+        },
+        {
+          "name": "cta",
+          "instances": [
+            ".aem-Grid--9 > .calltoaction"
+          ]
+        }
+      ],
+      "urlPattern": "/*",
+      "sections": [
+        {
+          "id": "1",
+          "name": "Title",
+          "selector": [
+            ".aem-Grid--9 > .position"
+          ],
+          "style": null,
+          "blocks": [],
+          "defaultContent": [
+            ".aem-Grid--9 > .position"
+          ]
+        },
+        {
+          "id": "2",
+          "name": "Intro + newsletter",
+          "selector": [
+            ".aem-Grid--9 > .flex:nth-of-type(3)"
+          ],
+          "style": null,
+          "blocks": [
+            "columns-aside"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "3",
+          "name": "Resource cards",
+          "selector": [
+            ".aem-Grid--9 > .flex:nth-of-type(5)"
+          ],
+          "style": "container, grid-3",
+          "blocks": [
+            "card-resource",
+            "card-resource-video"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "4",
+          "name": "Technical Publications Program",
+          "selector": [
+            ".aem-Grid--9 > .text:nth-of-type(7)"
+          ],
+          "style": null,
+          "blocks": [
+            "columns-aside",
+            "cta"
+          ],
+          "defaultContent": [
+            ".aem-Grid--9 > .text:nth-of-type(7)"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "employee-survey",
+      "urls": [
+        "http://127.0.0.1:8765/employee-survey.html"
+      ],
+      "representativeUrl": "http://127.0.0.1:8765/employee-survey.html",
+      "description": "Inside Adobe about-page: H1 with jump-to links, info callout, intro text, FAQ groups (H5 title + accordion).",
+      "blocks": [
+        {
+          "name": "callout",
+          "instances": [
+            ".aem-Grid--9 > .callout"
+          ]
+        },
+        {
+          "name": "accordion",
+          "instances": [
+            ".aem-Grid--9 > .accordion"
+          ]
+        }
+      ],
+      "urlPattern": "/*",
+      "sections": [
+        {
+          "id": "1",
+          "name": "Title + jump-to",
+          "selector": [
+            ".aem-Grid--9 > .position"
+          ],
+          "style": null,
+          "blocks": [],
+          "defaultContent": [
+            ".aem-Grid--9 > .position",
+            ".aem-Grid--9 > .text:nth-of-type(3)"
+          ]
+        },
+        {
+          "id": "2",
+          "name": "Callout, intro and FAQs",
+          "selector": [
+            ".aem-Grid--9 > .callout"
+          ],
+          "style": null,
+          "blocks": [
+            "callout",
+            "accordion"
+          ],
+          "defaultContent": [
+            ".aem-Grid--9 > .text"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "news-article",
+      "urls": [
+        "http://127.0.0.1:8765/cybersecurity-awareness-month-2026.html"
+      ],
+      "representativeUrl": "http://127.0.0.1:8765/cybersecurity-awareness-month-2026.html",
+      "description": "Inside Adobe news article: More News button, tags + date, H1, subtitle, feature image, article body.",
+      "blocks": [
+        {
+          "name": "article-meta",
+          "instances": [
+            ".aem-Grid--9 .articletags"
+          ]
+        }
+      ],
+      "urlPattern": "/news/*",
+      "sections": [
+        {
+          "id": "1",
+          "name": "More News",
+          "selector": [
+            ".aem-Grid--9 .dexter-Cta"
+          ],
+          "style": null,
+          "blocks": [],
+          "defaultContent": [
+            ".aem-Grid--9 .dexter-Cta"
+          ]
+        },
+        {
+          "id": "2",
+          "name": "Article",
+          "selector": [
+            ".aem-Grid--9 .articletags"
+          ],
+          "style": null,
+          "blocks": [
+            "article-meta"
+          ],
+          "defaultContent": [
+            ".aem-Grid--9 .articlecontent",
+            ".aem-Grid--9 .articlecontent + .text"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "home",
+      "urls": [
+        "http://127.0.0.1:8765/home.html"
+      ],
+      "representativeUrl": "http://127.0.0.1:8765/home.html",
+      "description": "Inside Adobe homepage: welcome line, news grid fed from the news index, right rail with promo images, product feedback banner and events.",
+      "blocks": [
+        {
+          "name": "welcome",
+          "instances": [
+            ".welcome"
+          ]
+        },
+        {
+          "name": "news-grid",
+          "instances": [
+            ".newsgrid"
+          ]
+        },
+        {
+          "name": "events",
+          "instances": [
+            ".eventlist"
+          ]
+        }
+      ],
+      "urlPattern": "/",
+      "sections": [
+        {
+          "id": "1",
+          "name": "Welcome + news",
+          "selector": [
+            ".welcome"
+          ],
+          "style": null,
+          "blocks": [
+            "welcome",
+            "news-grid"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "2",
+          "name": "Rail",
+          "selector": [
+            ".position:has(.eventlist):not(:has(.welcome))"
+          ],
+          "style": "rail",
+          "blocks": [
+            "events"
+          ],
+          "defaultContent": [
+            ".image.parbase",
+            ".text"
           ]
         }
       ]

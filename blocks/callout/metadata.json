@@ -1,0 +1,21 @@
+{
+  "variantName": "callout",
+  "baseBlock": "callout",
+  "canonicalModel": "standalone",
+  "visualCharacteristics": {
+    "layout": "full container width box with info icon",
+    "imageTreatment": "icon drawn in CSS",
+    "colorScheme": "light blue box",
+    "density": "low"
+  },
+  "contentPattern": "One cell: bold title paragraph, then text",
+  "usage": {
+    "pagesUsing": [
+      "http://127.0.0.1:8765/employee-survey.html"
+    ],
+    "reuseCount": 0,
+    "lastUsed": "2026-10-09T00:00:00.000Z"
+  },
+  "options": [],
+  "memberVariantIds": []
+}

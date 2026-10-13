@@ -1,0 +1,21 @@
+{
+  "variantName": "welcome",
+  "baseBlock": "custom",
+  "canonicalModel": "standalone",
+  "visualCharacteristics": {
+    "layout": "date line, heading left, button right",
+    "imageTreatment": "none",
+    "colorScheme": "light",
+    "density": "low"
+  },
+  "contentPattern": "One row: heading | bold link (button); date added at runtime",
+  "usage": {
+    "pagesUsing": [
+      "http://127.0.0.1:8765/home.html"
+    ],
+    "reuseCount": 0,
+    "lastUsed": "2026-10-09T00:00:00.000Z"
+  },
+  "options": [],
+  "memberVariantIds": []
+}

@@ -1,0 +1,21 @@
+{
+  "variantName": "accordion",
+  "baseBlock": "accordion",
+  "canonicalModel": "standalone",
+  "visualCharacteristics": {
+    "layout": "stacked question rows with top/bottom rules, Expand All / Collapse All link top right",
+    "imageTreatment": "none",
+    "colorScheme": "light",
+    "density": "medium"
+  },
+  "contentPattern": "One row per item: question | answer content",
+  "usage": {
+    "pagesUsing": [
+      "http://127.0.0.1:8765/employee-survey.html"
+    ],
+    "reuseCount": 0,
+    "lastUsed": "2026-10-09T00:00:00.000Z"
+  },
+  "options": [],
+  "memberVariantIds": []
+}

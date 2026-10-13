@@ -1,0 +1,42 @@
+.quote {
+  max-width: var(--grid-container-width);
+  margin-inline: auto;
+
+  > div > div {
+    padding: 30px;
+    background: #f4f6fa;
+    font-size: var(--body-font-size-s);
+    line-height: 20px;
+
+    &::before {
+      content: "";
+      display: block;
+      width: 40px;
+      height: 40px;
+      margin-bottom: 11px;
+      background: url("quote.svg") center / contain no-repeat;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    > p:last-child:not(:first-child) {
+      margin-top: 20px;
+      font-size: var(--body-font-size-xs);
+      line-height: 14px;
+    }
+  }
+
+  @media (width >= 600px) {
+    > div > div {
+      font-size: var(--body-font-size-m);
+      line-height: 24px;
+
+      > p:last-child:not(:first-child) {
+        font-size: var(--body-font-size-s);
+        line-height: 16px;
+      }
+    }
+  }
+}

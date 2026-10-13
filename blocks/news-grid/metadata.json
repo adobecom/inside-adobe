@@ -1,0 +1,21 @@
+{
+  "variantName": "news-grid",
+  "baseBlock": "custom",
+  "canonicalModel": "standalone",
+  "visualCharacteristics": {
+    "layout": "image tiles with dark gradient text overlay, 2 per row at 1200px+",
+    "imageTreatment": "cover image, gray placeholder when missing",
+    "colorScheme": "white text on image",
+    "density": "high"
+  },
+  "contentPattern": "No authored content; reads /news/query-index.json",
+  "usage": {
+    "pagesUsing": [
+      "http://127.0.0.1:8765/home.html"
+    ],
+    "reuseCount": 0,
+    "lastUsed": "2026-10-09T00:00:00.000Z"
+  },
+  "options": [],
+  "memberVariantIds": []
+}

@@ -40,6 +40,31 @@ indices:
         select: head > meta[property="article:tag"]
         values: |
           attribute(el, 'content')
+  news:
+    include:
+      - /news/**
+    target: /news/query-index.json
+    properties:
+      title:
+        select: head > meta[property="og:title"]
+        value: |
+          attribute(el, "content")
+      subtitle:
+        select: main h1 + h2
+        value: |
+          textContent(el)
+      image:
+        select: head > meta[property="og:image"]
+        value: |
+          match(attribute(el, "content"), "https:\/\/[^/]+(/.*)")
+      collection:
+        select: main .article-meta > div:first-child > div:first-child
+        value: |
+          textContent(el)
+      date:
+        select: head > meta[name="publication-date"]
+        value: |
+          attribute(el, "content")
   authors:
     include:
       - /author/**

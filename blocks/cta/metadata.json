@@ -1,0 +1,21 @@
+{
+  "variantName": "cta",
+  "baseBlock": "cta",
+  "canonicalModel": "standalone",
+  "visualCharacteristics": {
+    "layout": "full container width box",
+    "imageTreatment": "none",
+    "colorScheme": "gray box, blue primary pill button",
+    "density": "low"
+  },
+  "contentPattern": "One cell: H3, paragraphs, bold link as primary button",
+  "usage": {
+    "pagesUsing": [
+      "http://127.0.0.1:8765/adobe-research.html"
+    ],
+    "reuseCount": 0,
+    "lastUsed": "2026-10-09T00:00:00.000Z"
+  },
+  "options": [],
+  "memberVariantIds": []
+}

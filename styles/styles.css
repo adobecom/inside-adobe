@@ -195,11 +195,14 @@ a {
 
   &.btn {
     display: inline-block;
-    line-height: 1;
-    font-weight: 500;
+    min-height: 32px;
+    font-size: var(--body-font-size-s);
+    line-height: 20px;
+    font-weight: 700;
     text-decoration: none;
     border: 2px solid;
-    padding: 8px 12px;
+    border-radius: 16px;
+    padding: 4px 14px;
     box-sizing: border-box;
 
     &.btn-outline {
@@ -218,9 +221,14 @@ a {
   }
 
   &.btn-primary {
-    color: var(--color-background);
-    background-color: var(--color-text);
-    border: 2px solid var(--color-text);
+    color: #fff;
+    background-color: #1473e6;
+    border: 2px solid #1473e6;
+
+    &:hover {
+      background-color: #0d66d0;
+      border-color: #0d66d0;
+    }
 
     &.btn-outline {
       color: var(--color-text);
@@ -340,6 +348,15 @@ h2 {
 h3 {
   font-size: var(--heading-font-size-l);
   font-weight: 800;
+
+  .default-content & {
+    margin-block: var(--spacing-s);
+    font-size: var(--heading-font-size-s);
+
+    @media (width >= 900px) {
+      font-size: var(--heading-font-size-l);
+    }
+  }
 }
 
 h4 { font-size: var(--heading-font-size-m); }

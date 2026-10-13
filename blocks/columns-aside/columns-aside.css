@@ -1,0 +1,47 @@
+.columns-aside {
+  max-width: var(--grid-container-width);
+  margin-inline: auto;
+
+  .row {
+    display: grid;
+    gap: 16px;
+  }
+
+  .col-main > :first-child {
+    margin-top: 0;
+  }
+
+  /* boxed note beside the main text */
+  .col-aside {
+    align-self: start;
+    padding: 0 20px 20px;
+    border-radius: 4px;
+    background: #f4f6fa;
+    font-size: 14px;
+    line-height: 30px;
+
+    h3 {
+      margin: 0 -20px;
+      padding: 20px;
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 30px;
+    }
+
+    p {
+      margin: 0;
+    }
+  }
+}
+
+@media (width >= 900px) {
+  .columns-aside {
+    .row {
+      grid-template-columns: 2fr 1fr;
+    }
+
+    .col-aside {
+      font-size: 16px;
+    }
+  }
+}

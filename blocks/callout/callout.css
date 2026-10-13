@@ -1,0 +1,63 @@
+.callout {
+  --title-line-height: 30px;
+
+  max-width: var(--grid-container-width);
+  margin-inline: auto;
+  background: #d3f1ff;
+
+  > div > div {
+    position: relative;
+    padding: 20px 20px 20px 60px;
+
+    &::before {
+      content: "i";
+      position: absolute;
+      inset: calc(20px + (var(--title-line-height) - 20px) / 2 + 3px) auto auto 20px;
+      width: 20px;
+      height: 20px;
+      border-radius: 2px;
+      background: #1473e6;
+      color: #fff;
+      font: 700 14px/20px var(--font-family);
+      text-align: center;
+    }
+
+    > :first-child {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 800;
+      line-height: var(--title-line-height);
+    }
+
+    > p:not(:first-child) {
+      margin: 20px 0;
+      font-size: 14px;
+      line-height: 30px;
+    }
+  }
+
+  @media (width >= 900px) {
+    --title-line-height: 36px;
+
+    > div > div {
+      > :first-child {
+        font-size: 24px;
+      }
+
+      > p:not(:first-child) {
+        font-size: 16px;
+      }
+    }
+  }
+}
+
+/* callout (alert): yellow, with a warning icon */
+.callout.alert {
+  background: #ffeebc;
+
+  > div > div::before {
+    content: "";
+    border-radius: 0;
+    background: url("alert.svg") center / contain no-repeat;
+  }
+}

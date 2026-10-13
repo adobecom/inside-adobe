@@ -1,0 +1,89 @@
+.side-nav {
+  summary {
+    position: relative;
+    display: block;
+    box-sizing: border-box;
+    min-height: 32px;
+    padding: 8px 40px 8px 10px;
+    background: #e6e6e6;
+    font-size: var(--body-font-size-s);
+    font-weight: 700;
+    line-height: 16px;
+    cursor: pointer;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 10px 20px auto auto;
+      width: 6px;
+      height: 6px;
+      border: solid var(--color-text);
+      border-width: 0 1px 1px 0;
+      rotate: 45deg;
+    }
+  }
+
+  [open] > summary::after {
+    inset-block-start: 14px;
+    rotate: 225deg;
+  }
+
+  :is(h2, h3) {
+    margin: 20px 0;
+    padding: 0 0 18px 10px;
+    border-bottom: 1px solid var(--color-gray-200);
+    font-size: var(--heading-font-size-s);
+    font-weight: 900;
+    line-height: 24px;
+
+    a {
+      color: var(--color-text);
+    }
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    margin-block: 4px;
+  }
+
+  li a {
+    display: block;
+    padding: 8px 10px;
+    border-radius: 4px;
+    color: var(--color-text);
+    font-size: var(--body-font-size-s);
+    font-weight: 400;
+    line-height: 21px;
+
+    &:hover {
+      background: rgb(50 50 50 / 6%);
+      text-decoration: none;
+    }
+
+    &[aria-current] {
+      background: #e6e6e6;
+      font-weight: 700;
+    }
+  }
+
+  @media (width >= 900px) {
+    summary {
+      display: none;
+    }
+
+    :is(h2, h3) {
+      font-size: var(--heading-font-size-l);
+      line-height: 30px;
+    }
+
+    li a {
+      font-size: var(--body-font-size-m);
+      line-height: 24px;
+    }
+  }
+}
