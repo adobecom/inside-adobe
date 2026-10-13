@@ -1,0 +1,14 @@
+/* event pages: More Events button at the top right, no divider under it */
+.event-template main {
+  > .section:first-child .default-content {
+    text-align: right;
+
+    p {
+      margin: 0;
+    }
+  }
+
+  > .section + .section::before {
+    display: none;
+  }
+}

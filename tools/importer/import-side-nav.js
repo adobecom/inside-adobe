@@ -250,6 +250,7 @@ export default {
       if (emit === 'fragment' && name === source.searchParams.get('name')) {
         const frag = xf.cloneNode(true);
         convert(frag, document, pageUrl);
+        cleanupTransformer('afterTransform', frag, payload);
         dedupeBreaks(frag);
         rewriteLinks(frag);
         WebImporter.rules.adjustImageUrls(frag, payload.url, params.originalURL);

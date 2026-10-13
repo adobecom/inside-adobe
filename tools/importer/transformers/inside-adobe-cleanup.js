@@ -142,6 +142,11 @@ export default function transform(hookName, element, payload) {
       h.replaceWith(heading);
     });
 
+    // Presentational wrappers
+    content.querySelectorAll('b[data-rte-class="rte-temp"]').forEach(unwrap);
+    content.querySelectorAll('span.body-text-1, span.body-text-2').forEach(unwrap);
+
+    // (after the span unwrap above, so links nested in spans are found too)
     // A bold/italic run holding a link plus other text would become a button that swallows the
     // text (ak.js decorateButton only checks the paragraph); take the link out of the run
     // (links are bold here anyway). Emphasis inside the link would be merged back by markdown.
@@ -153,10 +158,6 @@ export default function transform(hookName, element, payload) {
       wrap.after(a, after);
       [wrap, after].forEach((w) => { if (!w.textContent.trim()) w.remove(); });
     });
-
-    // Presentational wrappers
-    content.querySelectorAll('b[data-rte-class="rte-temp"]').forEach(unwrap);
-    content.querySelectorAll('span.body-text-1, span.body-text-2').forEach(unwrap);
 
     // &nbsp; noise: normalize to plain spaces, drop whitespace-only inline wrappers and paragraphs
     const walker = doc.createTreeWalker(content, 4 /* NodeFilter.SHOW_TEXT */);
