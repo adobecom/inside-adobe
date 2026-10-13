@@ -9,16 +9,17 @@
  *     video card (.thumbnail): linked thumbnail image, H3 title, description
  *     image (.image): the picture, linked if the source links it
  *     call to action (.calltoaction): H3, text, and the button as a bold link
+ *     callout (.callout): its title (H3) and text
  *     shared fragment link (/fragments/...), loaded in place by the fragment block
  */
-const ASIDE = '.boxtextandimage, .thumbnail, .image, .calltoaction';
+const ASIDE = '.boxtextandimage, .thumbnail, .image, .calltoaction, .callout';
 
 function asideContent(item, document) {
   const out = [];
-  const title = item.querySelector('.image-text-header, .thumbnail-title, .call-to-action-title, h3');
+  const title = item.querySelector('.image-text-header, .thumbnail-title, .call-to-action-title, .callout-title, h3');
   const img = item.querySelector('img.image-url, .image-ctr img, img:not(.overlay-image)');
   const link = img?.closest('a[href]');
-  if (img && !item.matches('.boxtextandimage, .calltoaction')) {
+  if (img && !item.matches('.boxtextandimage, .calltoaction, .callout')) {
     const p = document.createElement('p');
     if (link) {
       const a = document.createElement('a');
@@ -35,7 +36,7 @@ function asideContent(item, document) {
     h3.textContent = title.textContent.trim();
     out.push(h3);
   }
-  const description = item.querySelector('.image-text-description, .thumbnail-description-container, .call-to-action-desc');
+  const description = item.querySelector('.image-text-description, .thumbnail-description-container, .call-to-action-desc, .callout-text');
   if (description) out.push(...[...description.children].filter((c) => !c.matches('h3, .thumbnail-title') && c.textContent.trim()));
   const button = item.querySelector('a.spectrum-Button');
   if (button) {
