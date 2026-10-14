@@ -16,7 +16,8 @@ repository.
 | **Code** | All merged: PR #1 (Mission & Plan, header, footer), PR #3 (templates, blocks, Side-Nav/Event/Full-Width imports), PR #4 (news, documents, redirects, page names), PR #5 (handover), PR #6 (image pop-up tiles); PR #2 closed. CDN config (`config/cdn.yaml`) on `main`, not yet deployed. |
 | **Source copy** | Private repo `adobecom/inside-adobe-mirror`: a signed-in crawl of the intranet (US edition) |
 | **Pages migrated** | **970 of ~1,080** intranet pages, in DA (all news and events included) |
-| **Published** | **Everything**, behind sign-in (2026-10-14): 970 pages, 140 fragments, 1,052 PDFs, `/redirects`. Production hostname not connected yet |
+| **Published** | **Everything**, behind sign-in (2026-10-14): 970 pages, 140 fragments, 1,052 PDFs, `/redirects`. `preview.inside.adobe.com` is in use from Adobe's network (it doesn't resolve from outside) |
+| **Authoring** | Authors started editing in DA on 2026-10-14; DA is now the source of truth, not the import (§1) |
 
 ---
 
@@ -27,10 +28,14 @@ repository.
 1. **Confirm access control.** As of 2026-10-14 `*.aem.page`, `*.aem.live` and `content.da.live`
    answer 401 to anonymous requests, so site authentication is on (§4.4). Confirm the allowed users
    in the Config Service `access` settings. The repo itself is still public.
-2. **Restrict `preview.inside.adobe.com` before it goes live.** `config/cdn.yaml` sends the site token
-   to the origin, so the CDN serves the protected pages to anyone who can reach the hostname. Put
-   sign-in or network restrictions on the CDN before connecting DNS (it doesn't resolve yet).
-3. **Mirror history:** replaced with a fresh history (the commit with session cookies is no longer
+2. **Confirm `preview.inside.adobe.com` is restricted.** It was in use on 2026-10-14, reachable from
+   Adobe's network only (no public DNS). `config/cdn.yaml` sends the site token to the origin, so the
+   CDN serves the protected pages to anyone who can reach the hostname: keep it internal, or add
+   sign-in on the CDN, before any public DNS.
+3. **Publish or discard the pending author edits.** Saved in DA after the bulk publish, not live:
+   `/about-adobe/adobe-mission-and-plan` (16:23 UTC, not previewed), `/index` (17:05, previewed, not
+   published), `/about-adobe` (17:09, not previewed).
+4. **Mirror history:** replaced with a fresh history (the commit with session cookies is no longer
    on a branch; GitHub drops unreferenced commits over time). Sign out of the intranet to end that
    session if not done yet.
 
@@ -53,6 +58,7 @@ repository.
 |---|---|
 | Re-crawl leftovers | The re-crawl's 153 "new" URLs were mostly second addresses of migrated pages; the 93 new events are in DA. Left out: `/benefits-wellbeing/emotional-wellbeing/romania` (Romania edition, US only by decision). |
 | Linked documents left | 54 links still point to `inside.corp.adobe.com`. **Decision needed** for 28: 22 Word/Excel/PowerPoint files and 6 PDFs over 20 MB, which Edge Delivery can't serve (aem.live/docs/limits). Also 12 images linked as downloads (not crawled), 11 already 404 on the intranet, 3 never fetched. |
+| Re-importing | Authors now edit in DA. Never bulk re-upload imported content: re-import only to fix a converter bug, and replace a document only after checking it is unchanged since our last upload (`.migration/scripts/da_safe_overwrite.py` compares DA with the previous upload). |
 | Re-save incident (2026-10-14) | Between 04:25 and 04:59 UTC an unidentified tool re-saved every DA document, pointing images at page-folder copies it never created (images broke in preview), rewriting `#` links to `/`, dropping `?` queries and trimming hyphens. All 1,110 documents were restored from the import and verified byte for byte before the bulk preview; the re-saved versions are backed up locally. The tool is still unidentified: don't run bulk tools that rewrite media or links on this content. |
 | Redirects | Sheet `/redirects` (95 rows, §4.6), published and active. CDN suffix removal for `preview.inside.adobe.com` is configured in `config/cdn.yaml` but needs a Cloud Manager deployment. Legacy `/content/inside/en/…` paths are not covered. |
 | Other editions | Only the US edition was crawled (24 US-specific pages, e.g. `…/health-insurance/us`). Other countries deferred. |
@@ -218,7 +224,9 @@ Things to know:
    (the runner's pop-up closer clicked "agreement" links and navigated away).
 3. Bundled with `aem-import-bundle.sh`, imported with `run-bulk-import.js` per URL list.
 4. Uploaded with the DA source API, **only to targets that didn't exist**, or that were unchanged
-   since our own previous upload (checked document by document before replacing). After the
+   since our own previous upload (checked document by document before replacing). The last bulk
+   upload was 2026-10-14 13:31 UTC; later uploads were the 30 tile pages and Career Opportunities
+   (each checked first). Documents edited by authors since are left alone. After the
    2026-10-14 re-save incident, all documents were restored (backup first) and 316 old-named
    documents removed, each checked against its backup.
 5. Previewed and published with Admin API bulk jobs (`.migration/scripts/bulk_preview.py`).
@@ -276,6 +284,8 @@ each page from `head.html` and the imported `.plain.html` for the checks.
 | 1,052 PDFs under `/dam/…`, `/redirects.json` | 200 | 200 |
 | `/news/query-index.json` | 200 | 200 (filled by publishing the articles) |
 | Office files and PDFs over 20 MB (§1) | not previewable | — |
+| `/about-adobe/adobe-mission-and-plan`, `/about-adobe` | author edits in DA not previewed | older version |
+| `/index` | author edit previewed | older version |
 
 ### 4.3 Admin API
 
