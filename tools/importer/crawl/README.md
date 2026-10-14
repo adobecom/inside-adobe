@@ -46,9 +46,9 @@ A first test run: `node tools/importer/crawl/crawl.mjs --max 50`.
 
 ## Other editions
 
-18 topics (health insurance, time off, payroll, check-in…) send each person to their edition's
-page. `editions.mjs` switches through the header's edition picker in the same signed-in browser,
-records where each topic lands, and switches you back to your own edition at the end:
+18 topics send each person to their own version: 12 by country (health insurance, time off,
+payroll…; about 37 countries each) and 6 by role (check-in, promotions…; `default` and `manager`).
+`editions.mjs --topics` lists every version without changing anything in your profile:
 
 ```sh
 node tools/importer/crawl/editions.mjs --topics  # no switching: topic pages, listings, urls.txt
