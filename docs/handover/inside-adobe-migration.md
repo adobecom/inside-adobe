@@ -13,10 +13,10 @@ repository.
 |---|---|
 | **Organization / site** | `adobecom` / `inside-adobe` |
 | **Repository** | https://github.com/adobecom/inside-adobe (public) |
-| **Code** | PR #1 (Mission & Plan, header, footer) and PR #3 (templates, blocks, Side-Nav/Event/Full-Width imports) merged; PR #2 closed. News import and cleanup fixes: branch `migrate/news-articles`. |
+| **Code** | All merged: PR #1 (Mission & Plan, header, footer), PR #3 (templates, blocks, Side-Nav/Event/Full-Width imports), PR #4 (news, documents, redirects, page names); PR #2 closed. CDN config (`config/cdn.yaml`) on `main`, not yet deployed. |
 | **Source copy** | Private repo `adobecom/inside-adobe-mirror`: a signed-in crawl of the intranet (US edition) |
 | **Pages migrated** | **970 of ~1,080** intranet pages, in DA (all news and events included) |
-| **Published** | Nothing. 5 pages + header/footer were previewed early on; everything since is **upload only** |
+| **Published** | **Everything**, behind sign-in (2026-10-14): 970 pages, 140 fragments, 1,052 PDFs, `/redirects`. Production hostname not connected yet |
 
 ---
 
@@ -25,26 +25,27 @@ repository.
 ### Do first
 
 1. **Confirm access control.** As of 2026-10-14 `*.aem.page`, `*.aem.live` and `content.da.live`
-   answer 401 to anonymous requests, so site authentication is on (§4.4). Confirm it is restricted
-   to the intended Adobe IMS users before previewing in bulk. The repo itself is still public.
-2. **Mirror history:** replaced with a fresh history (the commit with session cookies is no longer
+   answer 401 to anonymous requests, so site authentication is on (§4.4). Confirm the allowed users
+   in the Config Service `access` settings. The repo itself is still public.
+2. **Restrict `preview.inside.adobe.com` before it goes live.** `config/cdn.yaml` sends the site token
+   to the origin, so the CDN serves the protected pages to anyone who can reach the hostname. Put
+   sign-in or network restrictions on the CDN before connecting DNS (it doesn't resolve yet).
+3. **Mirror history:** replaced with a fresh history (the commit with session cookies is no longer
    on a branch; GitHub drops unreferenced commits over time). Sign out of the intranet to end that
    session if not done yet.
-3. **Merge the news branch** (`migrate/news-articles`) after review: it adds the article location
-   row; the importer fixes only matter for re-imports.
 
 ### Migration progress
 
 | Template (source) | Pages | Status |
 |---|---|---|
-| Side-Nav Page | 360 | In DA. Includes Mission & Plan, Adobe Research, Employee Survey (replaced with the Side-Nav versions on 2026-10-13; earlier versions backed up locally) |
-| Event | 242 | In DA: 149 from the first crawl, 93 more found by the re-crawl (mostly linked from news) |
-| Full-Width Page | 86 | In DA (44 section landing pages, 42 office pages) |
-| Homepage | 1 | In DA, previewed |
-| News Article | 281 | In DA, full archive from the news feed (the feed counts 285; 283 crawled, 281 unique). The Cybersecurity article was previewed early, before its re-import |
-| Shared content | 84 section menus, 54 shared fragments, header, footer | In DA |
-| Images | ~1,500 | In DA under `/dam/…` (intranet DAM paths, lowercased) |
-| Documents | 1,052 PDFs | In DA under `/dam/…`; every page link to them rewritten (277 pages). Not previewed: preview each PDF before it can be downloaded from the site |
+| Side-Nav Page | 360 | Published. Includes Mission & Plan, Adobe Research, Employee Survey (the Side-Nav versions since 2026-10-13) |
+| Event | 242 | Published: 149 from the first crawl, 93 more found by the re-crawl (mostly linked from news) |
+| Full-Width Page | 86 | Published (44 section landing pages, 42 office pages) |
+| Homepage | 1 | Published |
+| News Article | 281 | Published, full archive from the news feed (the feed counts 285; 283 crawled, 281 unique) |
+| Shared content | 84 section menus, 54 shared fragments, header, footer | Published |
+| Images | ~1,500 | In DA under `/dam/…` (intranet DAM paths, lowercased); served from the pages once previewed. One 26 MB PNG (Steven Bartlett article) replaced by a resized JPEG to fit the 20 MB limit |
+| Documents | 1,052 PDFs | Published under `/dam/…`; every page link to them rewritten (277 pages) |
 
 ### Also outstanding
 
@@ -52,11 +53,12 @@ repository.
 |---|---|
 | Re-crawl leftovers | The re-crawl's 153 "new" URLs were mostly second addresses of migrated pages; the 93 new events are in DA. Left out: `/benefits-wellbeing/emotional-wellbeing/romania` (Romania edition, US only by decision). |
 | Linked documents left | 54 links still point to `inside.corp.adobe.com`. **Decision needed** for 28: 22 Word/Excel/PowerPoint files and 6 PDFs over 20 MB, which Edge Delivery can't serve (aem.live/docs/limits). Also 12 images linked as downloads (not crawled), 11 already 404 on the intranet, 3 never fetched. |
-| Re-save incident (2026-10-14) | Between 04:25 and 04:59 UTC an unidentified tool re-saved every DA document, pointing images at page-folder copies it never created (images broke in preview) and rewriting `#` links to `/`. All documents were restored from the import and verified; the re-saved versions are backed up locally. Don't run bulk tools that rewrite media or links on this content. |
-| Redirects | Sheet `/redirects` in DA (95 rows, §4.6); takes effect once previewed and published. CDN suffix removal for `preview.inside.adobe.com` is configured in `config/cdn.yaml` but needs a Cloud Manager deployment. Legacy `/content/inside/en/…` paths are not covered. |
+| Re-save incident (2026-10-14) | Between 04:25 and 04:59 UTC an unidentified tool re-saved every DA document, pointing images at page-folder copies it never created (images broke in preview), rewriting `#` links to `/`, dropping `?` queries and trimming hyphens. All 1,110 documents were restored from the import and verified byte for byte before the bulk preview; the re-saved versions are backed up locally. The tool is still unidentified: don't run bulk tools that rewrite media or links on this content. |
+| Redirects | Sheet `/redirects` (95 rows, §4.6), published and active. CDN suffix removal for `preview.inside.adobe.com` is configured in `config/cdn.yaml` but needs a Cloud Manager deployment. Legacy `/content/inside/en/…` paths are not covered. |
 | Other editions | Only the US edition was crawled (24 US-specific pages, e.g. `…/health-insurance/us`). Other countries deferred. |
 | Production hostname, locales | `scripts/scripts.js` still has the template's `hostnames = ['authorkit.dev']` and template locale list. |
 | Block library | New blocks aren't registered in the DA block library. |
+| Leftovers in DA | Unlinked test uploads: 3 Office files and the 57 MB PDF (under `/dam/…`); early header/footer copies under `/content/fragments/nav`. Safe to delete. |
 | Live tools (by decision) | Café menus/hours, news listing, events calendar, holiday list, calendar filters, awards feed and the event submission form are replaced by a note linking to the intranet page. Stock quote and My Favorites (homepage) dropped. |
 | Left out | Left-column "Need help?" box under some section menus; profile/search/tools rail; 5 section captions on 3 pages; 1 image missing from the crawl (`ovidiu-eftimie-286x343.png`); 3 news images broken on the intranet itself (employee-communications: Premier League key visual, Creative residents, Women's FA Cup final). |
 | Engine bug (upstream) | `ak.js` `decorateButton` turns a bold/italic run that holds a link *plus other text* into a button and drops the text. Worked around in the importer; report it upstream. |
@@ -136,13 +138,15 @@ bold when it contains a link plus other text (it becomes a button and loses the 
   then a bulleted list of links. The current page is highlighted automatically.
 - **Shared content** (`/fragments/shared/<name>`): pages include it with a link to the fragment
   on its own line. Editing the fragment updates every page that uses it.
-- **Header / footer:** unchanged from PR #1 (brand section + nested menu list; footer columns, then
-  legal links, then copyright, in that order).
+- **Header / footer:** structure from PR #1 (brand section + nested menu list; footer columns, then
+  legal links, then copyright, in that order). Their links point to the migrated pages (310 links;
+  they pointed at the intranet until 2026-10-14). Menu headings link to `#`; keep it that way.
 
 ### 2.7 Preview and publish
 
-Nothing migrated since the first pages has been previewed. After site authentication is in place,
-preview/publish in bulk via the Admin API (§4.3), fragments first, then pages.
+Everything was previewed and published on 2026-10-14 (fragments, then pages, then PDFs and
+`/redirects`). After editing, preview and publish from the DA editor or Sidekick as usual. For bulk
+runs use the Admin API jobs (§4.3), fragments first.
 
 ---
 
@@ -154,7 +158,7 @@ Read `AGENTS.md`. The repo is buildless, Baseline Newly available, min-width bre
 600/900/1200px. `scripts/ak.js` (the shared engine) was **not** modified; project hooks live in
 `scripts/scripts.js`.
 
-### 3.2 Site code added in PR #3
+### 3.2 Site code added in PR #3 and #4
 
 | Area | Files | Summary |
 |---|---|---|
@@ -166,6 +170,7 @@ Read `AGENTS.md`. The repo is buildless, Baseline Newly available, min-width bre
 | Changed blocks | `card-resource` (order, linked image, video), `table` (rows → table), `callout` (alert) | |
 | Index | `helix-query.yaml` | `news` index → `/news/query-index.json` (title, subtitle, image, collection, date) |
 | Styles | `styles/styles.css` | Blue pill primary button; H3 in text 16px below 900px |
+| Article locations (PR #4) | `blocks/article-meta` | Optional third row: office locations, shown under the tags |
 
 ### 3.3 Import tooling (`tools/importer/`)
 
@@ -211,7 +216,10 @@ Things to know:
    (the runner's pop-up closer clicked "agreement" links and navigated away).
 3. Bundled with `aem-import-bundle.sh`, imported with `run-bulk-import.js` per URL list.
 4. Uploaded with the DA source API, **only to targets that didn't exist**, or that were unchanged
-   since our own previous upload (checked document by document before replacing).
+   since our own previous upload (checked document by document before replacing). After the
+   2026-10-14 re-save incident, all documents were restored (backup first) and 316 old-named
+   documents removed, each checked against its backup.
+5. Previewed and published with Admin API bulk jobs (`.migration/scripts/bulk_preview.py`).
 
 ### 3.5 Verification
 
@@ -226,6 +234,8 @@ Things to know:
   927px at 1440, cards and chips to the pixel or within the container difference).
 - **Rendering:** no error boxes, no horizontal overflow, no unknown blocks across all output.
 - **Code:** eslint/stylelint clean; 139 tests pass (the flaky `dapreview` aside).
+- **Preview:** the stored version of every page and fragment was checked for failed images:
+  1,106 of 1,110 clean; the 4 others are the images already missing at the source (§1).
 
 ### 3.6 Local preview caveats
 
@@ -254,15 +264,16 @@ each page from `head.html` and the imported `.plain.html` for the checks.
 |---|---|
 | Preview (main) | https://main--inside-adobe--adobecom.aem.page |
 | Live (main) | https://main--inside-adobe--adobecom.aem.live |
-| News branch preview | https://migrate-news-articles--inside-adobe--adobecom.aem.page |
 | Authoring | https://da.live/#/adobecom/inside-adobe |
 
-### 4.2 Content status (Admin API, 2026-10-13; news uploaded 2026-10-14, not previewed)
+### 4.2 Content status (Admin API, 2026-10-14)
 
 | Paths | Preview | Live |
 |---|---|---|
-| `/index`, `/about-adobe/adobe-mission-and-plan`, `/about-adobe/adobe-research`, `/about-adobe/employee-survey`, `/news/2026/09/cybersecurity-awareness-month-2026`, `/fragments/nav/header`, `/fragments/nav/footer` | 200 (early previews; the three About previews still show the *old* single-page versions) | 404 |
-| Everything else (870 pages, 138 fragments) | 404 (DA only) | 404 |
+| 970 pages, 140 fragments (`/fragments/nav`, `/fragments/side-nav`, `/fragments/shared`) | 200 | 200 |
+| 1,052 PDFs under `/dam/…`, `/redirects.json` | 200 | 200 |
+| `/news/query-index.json` | 200 | 200 (filled by publishing the articles) |
+| Office files and PDFs over 20 MB (§1) | not previewable | — |
 
 ### 4.3 Admin API
 
@@ -274,13 +285,17 @@ POST https://admin.hlx.page/index/adobecom/inside-adobe/main/{path}     # (re)in
 POST https://admin.hlx.page/cache/adobecom/inside-adobe/main/{path}     # purge live cache
 ```
 
-For bulk operations use the Admin API's bulk preview/publish jobs (or script per path), fragments
-before pages.
+For bulk operations POST `{"paths": [...], "forceUpdate": true}` to `…/preview/…/main/*` or
+`…/live/…/main/*`; poll `GET /job/adobecom/inside-adobe/main/{preview|publish}/{job}` (publish
+jobs are listed under `publish`, not `live`). Fragments before pages. The admin API rate-limits
+(429) above a few parallel calls.
 
-### 4.4 Access control (action required)
+### 4.4 Access control
 
 Site authentication is on: on 2026-10-14 preview, live and `content.da.live` returned 401 without
-sign-in. Confirm the allowed users in the Config Service `access` settings before previewing in bulk.
+sign-in. Confirm the allowed users in the Config Service `access` settings. The production CDN
+(`preview.inside.adobe.com`) authenticates to the origin with the site token, so it needs its own
+access restriction before DNS is connected (§1).
 
 ### 4.5 Code sync
 
@@ -321,9 +336,11 @@ malformed source links and calendar files for events that weren't crawled.
 
 ### 4.7 News index
 
-`helix-query.yaml` defines the `news` index (merged with PR #3). Preview/publish the news pages
-and check `/news/query-index.json`; if the Config Service has its own index configuration, it
-overrides the file. Re-index a page with the `index` Admin API call.
+`helix-query.yaml` defines the `news` index (merged with PR #3). Publishing the articles on
+2026-10-14 filled `/news/query-index.json` (checked: records carry title, subtitle, image,
+collection, date). If the Config Service has its own index configuration, it overrides the file.
+Re-index a page with the `index` Admin API call. News items that only redirected elsewhere
+(§4.6) aren't pages, so they don't appear in the homepage feed.
 
 ### 4.8 Permissions and credentials
 
