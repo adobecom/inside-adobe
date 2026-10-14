@@ -19,6 +19,7 @@ const { values: opts } = parseArgs({
     out: { type: 'string', default: 'inside-mirror' },
     profile: { type: 'string', default: '.crawl-profile' },
     probe: { type: 'boolean', default: false },
+    topics: { type: 'boolean', default: false },
     headless: { type: 'boolean', default: false },
   },
 });
@@ -47,6 +48,38 @@ if (!page.url().startsWith(SITE) || await page.locator('input[type="password"]')
   await page.goto(`${SITE}/home.html`, { waitUntil: 'domcontentloaded' });
 }
 await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {});
+
+// --topics: no edition switching. Save each topic page as delivered (before its script picks the
+// edition's page) and try AEM's listing addresses, to find the country pages and their geographies.
+if (opts.topics) {
+  const dir = join(DIR, 'topics');
+  await mkdir(dir, { recursive: true });
+  const report = {};
+  for (const t of TOPICS) {
+    const name = t.slice(1).replaceAll('/', '_');
+    report[t] = {};
+    const tries = {
+      html: `${SITE}${t}.html`,
+      model: `${SITE}/content/inside/en${t}.model.json`,
+      children: `${SITE}/content/inside/en${t}.1.json`,
+      infinity: `${SITE}/content/inside/en${t}.2.json`,
+    };
+    for (const [kind, url] of Object.entries(tries)) {
+      const resp = await context.request.get(url, { timeout: 60000, maxRedirects: 0 })
+        .catch((e) => e);
+      report[t][kind] = resp instanceof Error ? brief(resp.message) : resp.status();
+      if (!(resp instanceof Error) && resp.ok()) {
+        const file = `${name}.${kind === 'html' ? 'html' : `${kind}.json`}`;
+        await writeFile(join(dir, file), await resp.body());
+      }
+    }
+    console.log(`${t}: ${Object.entries(report[t]).map(([k, v]) => `${k} ${v}`).join(', ')}`);
+  }
+  await writeFile(join(DIR, 'topics.json'), JSON.stringify(report, null, 1));
+  console.log(`Saved ${dir} and ${join(DIR, 'topics.json')}`);
+  await context.close();
+  process.exit(0);
+}
 
 const current = async () => {
   const visible = page.locator('.gnav-edition:visible').first();
