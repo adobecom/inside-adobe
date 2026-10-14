@@ -1,6 +1,6 @@
 ---
 title: Inside Adobe on Edge Delivery — Migration Handover
-date: 2026-10-13
+date: 2026-10-14
 ---
 
 # Inside Adobe on Edge Delivery — Migration Handover
@@ -13,9 +13,9 @@ repository.
 |---|---|
 | **Organization / site** | `adobecom` / `inside-adobe` |
 | **Repository** | https://github.com/adobecom/inside-adobe (public) |
-| **Code** | PR #1 merged (Mission & Plan, header, footer). **PR #3 open**, branch `migrate/research-survey-news-home`: everything since. PR #2 (the first version of this guide) can be closed once PR #3 merges. |
+| **Code** | PR #1 (Mission & Plan, header, footer) and PR #3 (templates, blocks, Side-Nav/Event/Full-Width imports) merged; PR #2 closed. News import and cleanup fixes: branch `migrate/news-articles`. |
 | **Source copy** | Private repo `adobecom/inside-adobe-mirror`: a signed-in crawl of the intranet (US edition) |
-| **Pages migrated** | **597 of ~660** intranet pages, in DA |
+| **Pages migrated** | **970 of ~1,080** intranet pages, in DA (all news and events included) |
 | **Published** | Nothing. 5 pages + header/footer were previewed early on; everything since is **upload only** |
 
 ---
@@ -24,42 +24,41 @@ repository.
 
 ### Do first
 
-1. **Restrict access (security).** The repo is public and `*.aem.page` / `*.aem.live` are publicly
-   readable unless site authentication is configured. The 5 early previews (homepage, Mission &
-   Plan, Adobe Research, Employee Survey, the Cybersecurity article) and the header/footer are
-   readable now without signing in. Configure site authentication (§4.4) **before previewing
-   anything else**.
-2. **Clean the mirror repo's history.** A failed download in the crawl stored the crawling user's
-   intranet session cookies in `manifest.json`, and that commit is in `adobecom/inside-adobe-mirror`.
-   Sign out of the intranet (ends that session), re-run the crawl (it now stores one-line errors and
-   cleans old manifests), and replace the repo history with a fresh `git init` + force push (§3.7).
-3. **Merge PR #3** after review. Until then the main preview has none of the new blocks or
-   templates, and the homepage news grid has no index (§4.6).
+1. **Confirm access control.** As of 2026-10-14 `*.aem.page`, `*.aem.live` and `content.da.live`
+   answer 401 to anonymous requests, so site authentication is on (§4.4). Confirm it is restricted
+   to the intended Adobe IMS users before previewing in bulk. The repo itself is still public.
+2. **Mirror history:** replaced with a fresh history (the commit with session cookies is no longer
+   on a branch; GitHub drops unreferenced commits over time). Sign out of the intranet to end that
+   session if not done yet.
+3. **Merge the news branch** (`migrate/news-articles`) after review: it adds the article location
+   row; the importer fixes only matter for re-imports.
 
 ### Migration progress
 
 | Template (source) | Pages | Status |
 |---|---|---|
 | Side-Nav Page | 360 | In DA. Includes Mission & Plan, Adobe Research, Employee Survey (replaced with the Side-Nav versions on 2026-10-13; earlier versions backed up locally) |
-| Event | 149 | In DA |
+| Event | 242 | In DA: 149 from the first crawl, 93 more found by the re-crawl (mostly linked from news) |
 | Full-Width Page | 86 | In DA (44 section landing pages, 42 office pages) |
 | Homepage | 1 | In DA, previewed |
-| News Article | 1 of 62 crawled | In DA (Cybersecurity Awareness Month), previewed. **The rest and the full archive are waiting on the news re-crawl** (§3.7) |
+| News Article | 281 | In DA, full archive from the news feed (the feed counts 285; 283 crawled, 281 unique). The Cybersecurity article was previewed early, before its re-import |
 | Shared content | 84 section menus, 54 shared fragments, header, footer | In DA |
-| Images | ~1,000 | In DA under `/dam/…` (intranet DAM paths, lowercased) |
+| Images | ~1,500 | In DA under `/dam/…` (intranet DAM paths, lowercased) |
+| Documents | 1,052 PDFs | In DA under `/dam/…`; every page link to them rewritten (277 pages). Not previewed: preview each PDF before it can be downloaded from the site |
 
 ### Also outstanding
 
 | Item | Detail |
 |---|---|
-| News archive | Re-crawl with `--news-archive --with-docs`, push the mirror, then import with the article template. |
-| Linked documents | ~1,080 PDFs/Office files on the intranet DAM. Links still point to `inside.corp.adobe.com`; decision is to move them into DA and rewrite links (needs the `--with-docs` crawl). |
-| Redirects | 47 old → new redirects plus 43 alias URLs were recorded by the crawl; not yet in a redirects sheet. |
+| Re-crawl leftovers | The re-crawl's 153 "new" URLs were mostly second addresses of migrated pages; the 93 new events are in DA. Left out: `/benefits-wellbeing/emotional-wellbeing/romania` (Romania edition, US only by decision). |
+| Linked documents left | 54 links still point to `inside.corp.adobe.com`. **Decision needed** for 28: 22 Word/Excel/PowerPoint files and 6 PDFs over 20 MB, which Edge Delivery can't serve (aem.live/docs/limits). Also 12 images linked as downloads (not crawled), 11 already 404 on the intranet, 3 never fetched. |
+| Re-save incident (2026-10-14) | Between 04:25 and 04:59 UTC an unidentified tool re-saved every DA document, pointing images at page-folder copies it never created (images broke in preview) and rewriting `#` links to `/`. All documents were restored from the import and verified; the re-saved versions are backed up locally. Don't run bulk tools that rewrite media or links on this content. |
+| Redirects | Sheet `/redirects` in DA (95 rows, §4.6); takes effect once previewed and published. Old `.html` / `/content/inside/en/…` addresses are not in it (only matter if the intranet hostname moves to Edge Delivery). |
 | Other editions | Only the US edition was crawled (24 US-specific pages, e.g. `…/health-insurance/us`). Other countries deferred. |
 | Production hostname, locales | `scripts/scripts.js` still has the template's `hostnames = ['authorkit.dev']` and template locale list. |
 | Block library | New blocks aren't registered in the DA block library. |
 | Live tools (by decision) | Café menus/hours, news listing, events calendar, holiday list, calendar filters, awards feed and the event submission form are replaced by a note linking to the intranet page. Stock quote and My Favorites (homepage) dropped. |
-| Left out | Left-column "Need help?" box under some section menus; profile/search/tools rail; 5 section captions on 3 pages; 1 image missing from the crawl (`ovidiu-eftimie-286x343.png`). |
+| Left out | Left-column "Need help?" box under some section menus; profile/search/tools rail; 5 section captions on 3 pages; 1 image missing from the crawl (`ovidiu-eftimie-286x343.png`); 3 news images broken on the intranet itself (employee-communications: Premier League key visual, Creative residents, Women's FA Cup final). |
 | Engine bug (upstream) | `ak.js` `decorateButton` turns a bold/italic run that holds a link *plus other text* into a button and drops the text. Worked around in the importer; report it upstream. |
 | Flaky test | `dapreview > should load da.js module` fails intermittently under load (pre-existing). |
 
@@ -73,6 +72,7 @@ repository.
 |---|---|
 | Pages | same path as the intranet page without `/content/inside/en` and `.html`, e.g. `/benefits-wellbeing/health-insurance/us`, `/events/2026/10/<slug>`, `/news/2026/09/<slug>`; homepage `/index` |
 | Images | `/dam/<intranet DAM path>` (lowercase), shared by all pages |
+| Documents (PDF) | `/dam/<intranet DAM path>`, lowercase, accents removed, anything but letters/digits/`/` → `-` (e.g. `…/restroom_noida132.pdf` → `…/restroom-noida132.pdf`) |
 | Header / footer | `/fragments/nav/header`, `/fragments/nav/footer` |
 | Section menus | `/fragments/side-nav/<section>` (e.g. `benefits-wellbeing`, `offices-san-jose`) |
 | Shared content | `/fragments/shared/<name>` (e.g. `offices-printers`, `travel-paying-for-your-trip`) |
@@ -85,7 +85,7 @@ Edit at `https://da.live/edit#/adobecom/inside-adobe/<path>`.
 |---|---|---|
 | `side-nav` | 360 section pages | Adds the section menu (left on desktop, a bar above the content on mobile); 1236px grid |
 | `full-width` | 86 landing/office pages | 1236px grid; `band` sections (gray strips) |
-| `event` | 149 event pages | More Events button top right; no section dividers |
+| `event` | 242 event pages | More Events button top right; no section dividers |
 | `article` | news | Narrower column, More News top right, normal-weight body links |
 | `home` | homepage | Content + right rail layout from 1200px |
 
@@ -98,7 +98,7 @@ Edit at `https://da.live/edit#/adobecom/inside-adobe/<path>`.
 | `Side Nav` | side-nav pages, only when not the default | Menu name or path; default is the first path segment |
 | `Publication Date` | articles | `YYYY-MM-DD`; drives the homepage news grid order |
 | `Event Start` / `Event End` | events | `YYYY-MM-DD` (all day) or `YYYY-MM-DDTHH:MM`; date chip, "Multi Day", Add to Calendar |
-| `Event Time Zone` | timed events | IANA zone, e.g. `America/Los_Angeles` (leave out → viewer's local time) |
+| `Event Time Zone` | timed events | IANA zone, e.g. `America/Los_Angeles` (leave out → viewer's local time). Imported from the date line, else from the event's single office region |
 | `Event Type`, `Event Region` | events | Repeat the block values for future listings |
 
 ### 2.4 Section styles (Section Metadata `style`)
@@ -123,7 +123,7 @@ Edit at `https://da.live/edit#/adobecom/inside-adobe/<path>`.
 | `columns-video`, `columns-image` | one row: text \| video thumbnail or image | Mission & Plan |
 | `related-cards` | one row per card: image \| linked H3 + description | Photo tiles, 4/2/1 per row |
 | `event` | label \| value rows: Type, Region, Title (H1), When, Where, Link, Details | Chip and calendar file come from metadata (§2.3); keep **When** in step with `Event Start/End` |
-| `article-meta` | row 1: collection tag \| topic tags; row 2: date | Articles |
+| `article-meta` | row 1: collection tag \| topic tags; row 2: date; optional row 3: list of office locations | Articles; locations show under the tags |
 | `welcome`, `news-grid`, `events` | homepage | `news-grid` has no content: it reads `/news/query-index.json` |
 | `side-nav` | — | Added by the page script on side-nav pages; edit the menu fragment instead |
 
@@ -174,10 +174,11 @@ Read `AGENTS.md`. The repo is buildless, Baseline Newly available, min-width bre
 | `crawl/crawl.mjs` | Mirrors the intranet from a signed-in machine (see its README) |
 | `import-side-nav.js` | Side-Nav pages; `?emit=menu` → section menu, `?emit=fragment&name=<n>` → shared fragment |
 | `import-full-width.js` | Full-Width pages (related cards, bands) |
-| `import-events.js` | Events; parses the date line into `Event Start/End/Time Zone` (all 149 parse) |
+| `import-events.js` | Events; parses the date line into `Event Start/End/Time Zone` (all 242 parse; zone from the date line or the event's office) |
+| `import-news.js` | News articles: article-meta (tags, date, locations), image pop-ups inline, `Publication Date` |
 | `import-home.js`, `import-cybersecurity-awareness-month-2026.js`, `import-adobe-*.js`, `import-employee-survey.js`, `import-nav.js`, `import-footer.js` | The first single pages, header, footer |
 | `lib/inside-adobe-components.js` | Shared conversion by component type (droptab → collapsible sections, accordions, tables, callouts, cta, quote, boxes, flex groups → columns-aside, live tools → note, shared fragments) |
-| `parsers/*.js`, `transformers/inside-adobe-cleanup.js` | Per-block parsers; site-wide cleanup (chrome removal, heading promotion, jump links, Outlook tracking, emphasis/link fix) |
+| `parsers/*.js`, `transformers/inside-adobe-cleanup.js` | Per-block parsers; site-wide cleanup (chrome removal, heading promotion, jump links, Outlook tracking, emphasis/link fix, line breaks at emphasis edges) |
 | `shared-fragments.json` | Text fingerprint → name for the 54 shared experience fragments |
 
 Things to know:
@@ -189,6 +190,17 @@ Things to know:
 - **Tables**: any table inside a block, or a bare table in text, becomes a bogus block named after
   its first row. The importer turns accordion tables into labelled lists and text tables into
   `table` blocks; keep it that way.
+- **Links in emphasis:** a link is taken out of any bold/italic run that also holds other text
+  (nested runs and spans included), and out of a run it touches, so `decorateButton` can't turn the
+  paragraph into a text-dropping button.
+- **YouTube links** get `#_dnb`: they were links on the intranet, not embeds.
+- **Intranet panel links** (`?flyouttab=employeeDirectory&uid=…`, profile, quick links, learning
+  resources, notifications: 493 links, mostly people's names) point to
+  `inside.corp.adobe.com/home.html?flyouttab=…`; the new site has no directory or profile panel.
+- **Page names** are cleaned the way Edge Delivery names web paths (lowercase, runs of anything but
+  letters and digits → one `-`, no `-` at either end); a document under any other name can't be
+  previewed. Two intranet names that clean to an existing article get a country suffix (`RENAMED`
+  in `lib/inside-adobe-components.js`). Links and redirects go through the same `sitePath`.
 - **Bundles** (`*.bundle.js`), reports and imported content aren't committed.
 
 ### 3.4 How the migration was run (local)
@@ -206,7 +218,10 @@ Things to know:
 - **Content completeness:** for every page, words visible in the source main column (all panels
   opened) vs words visible on the migrated page (all sections opened, fragments loaded).
   Side-Nav 311/360 ≥ 99% (all below 90% are live tools); Events 146/149 ≥ 95% and the rest fixed
-  to 100%; Full-Width 84/86 ≥ 99% (event submission form is a tool note by decision).
+  to 100%; Full-Width 84/86 ≥ 99% (event submission form is a tool note by decision); News
+  281/281 ≥ 98.4%. After the 2026-10-14 cleanup fixes all templates were re-imported and re-checked:
+  Events 143/149 ≥ 99%, Side-Nav 326/360, Full-Width 85/86; the only drops are office events lists
+  that are now tool notes. The 93 re-crawl events: 92 at 100%, 1 at 97.9%.
 - **Layout:** measured against the source at 1440/768/375px for each template (menu 285px, content
   927px at 1440, cards and chips to the pixel or within the container difference).
 - **Rendering:** no error boxes, no horizontal overflow, no unknown blocks across all output.
@@ -217,7 +232,9 @@ Things to know:
 `aem up --html-folder content` keeps authored capitals in meta names (`Template`, not `template`)
 and serves imported files under `/content`. Templates and the side nav therefore don't apply in a
 plain local preview; a harness (`.migration/scripts/preview-sim.cjs`) simulates the live pipeline.
-The live site lowercases meta names, so this doesn't affect production.
+The live site lowercases meta names, so this doesn't affect production. With site authentication
+on, `aem up` can't fetch the origin to wrap pages either; `.migration/scripts/local-pages.cjs` builds
+each page from `head.html` and the imported `.plain.html` for the checks.
 
 ### 3.7 Mirror and crawl
 
@@ -225,9 +242,7 @@ The live site lowercases meta names, so this doesn't affect production.
   the news feed; `--with-docs` downloads linked documents; `--urls` adds a list.
 - Push only the `inside-mirror` folder to `adobecom/inside-adobe-mirror`; never `.crawl-profile`
   (it holds the signed-in session).
-- **History clean-up still to do** (§1): `cd inside-mirror && rm -rf .git && git init -b main &&
-  git add . && git commit -m "Intranet mirror" && git remote add origin
-  https://github.com/adobecom/inside-adobe-mirror.git && git push --force -u origin main`.
+- The mirror's history was replaced with a single fresh commit on 2026-10-13 (§1).
 
 ---
 
@@ -239,15 +254,15 @@ The live site lowercases meta names, so this doesn't affect production.
 |---|---|
 | Preview (main) | https://main--inside-adobe--adobecom.aem.page |
 | Live (main) | https://main--inside-adobe--adobecom.aem.live |
-| PR #3 branch preview | https://migrate-research-survey-news-home--inside-adobe--adobecom.aem.page |
+| News branch preview | https://migrate-news-articles--inside-adobe--adobecom.aem.page |
 | Authoring | https://da.live/#/adobecom/inside-adobe |
 
-### 4.2 Content status (Admin API, 2026-10-13)
+### 4.2 Content status (Admin API, 2026-10-13; news uploaded 2026-10-14, not previewed)
 
 | Paths | Preview | Live |
 |---|---|---|
 | `/index`, `/about-adobe/adobe-mission-and-plan`, `/about-adobe/adobe-research`, `/about-adobe/employee-survey`, `/news/2026/09/cybersecurity-awareness-month-2026`, `/fragments/nav/header`, `/fragments/nav/footer` | 200 (early previews; the three About previews still show the *old* single-page versions) | 404 |
-| Everything else (590+ pages, 138 fragments) | 404 (DA only) | 404 |
+| Everything else (870 pages, 138 fragments) | 404 (DA only) | 404 |
 
 ### 4.3 Admin API
 
@@ -264,21 +279,38 @@ before pages.
 
 ### 4.4 Access control (action required)
 
-Configure site authentication for preview and live (Config Service `access` settings, restricted to
-Adobe IMS users) and confirm unauthenticated requests are rejected. Until then, don't preview.
+Site authentication is on: on 2026-10-14 preview, live and `content.da.live` returned 401 without
+sign-in. Confirm the allowed users in the Config Service `access` settings before previewing in bulk.
 
 ### 4.5 Code sync
 
-`main` serves merged code. The PR #3 branch preview serves the new code (verified), so reviews can
-use the branch URL.
+`main` serves merged code; branch previews serve their branch's code, so reviews can use the
+branch URL (sign-in required).
 
-### 4.6 News index
+### 4.6 Redirects
 
-`helix-query.yaml` defines the `news` index (PR #3). After merging, preview/publish the news pages
+`/redirects` (DA sheet, columns Source, Destination, Note; Edge Delivery reads the first two).
+Built by `.migration/scripts/build_redirects.py` from the crawl and the news feed:
+
+| Rows | What |
+|---|---|
+| 61 | Intranet redirects between pages (e.g. `/benefits-wellbeing/health-insurance` → `…/us`) |
+| 25 | Intranet pages and news items that redirected to another site (blog.adobe.com, max.adobe.com, Navan…) |
+| 5 | News items that opened a PDF; the PDFs weren't crawled, so they still point to the intranet |
+| 4 | `/home` → `/`, and three links already broken on the intranet with a clear new page (Founders Award, Tech Award, VIA) |
+
+Redirects win over pages at the same path; none of the sources is a migrated page. Preview and
+publish `/redirects` like a page. Still dead (not redirected): office "activities" pages that
+never existed (Ottawa, Denver, Los Angeles), `/adobe-life/communities…`, intranet search, a few
+malformed source links and calendar files for events that weren't crawled.
+
+### 4.7 News index
+
+`helix-query.yaml` defines the `news` index (merged with PR #3). Preview/publish the news pages
 and check `/news/query-index.json`; if the Config Service has its own index configuration, it
 overrides the file. Re-index a page with the `index` Admin API call.
 
-### 4.7 Permissions and credentials
+### 4.8 Permissions and credentials
 
 - DA uploads used the Adobe-credentials permission and GitHub access used a fine-grained token,
   both set in Settings → LLM Permissions. Revoke or rotate them when no longer needed.

@@ -1,7 +1,7 @@
 /* eslint-disable */
 /* global WebImporter */
 /**
- * Import for the intranet's "Event" template (149 pages), from the local mirror.
+ * Import for the intranet's "Event" template (242 pages), from the local mirror.
  * Page: More Events button, then the event block (parsers/event.js), then metadata:
  *   Template: event; Event Start / Event End (YYYY-MM-DD, or YYYY-MM-DDTHH:MM when timed);
  *   Event Time Zone (IANA, when the source names one); Event Type; Event Region.
@@ -10,6 +10,7 @@
  */
 import cleanupTransformer from './transformers/inside-adobe-cleanup.js';
 import eventParser from './parsers/event.js';
+import { sitePath, rewriteLinks } from './lib/inside-adobe-components.js';
 
 const MONTHS = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
 const TZ = {
@@ -19,6 +20,19 @@ const TZ = {
   ET: 'America/New_York', EST: 'America/New_York', EDT: 'America/New_York',
   GMT: 'Europe/London', BST: 'Europe/London', CET: 'Europe/Paris', CEST: 'Europe/Paris',
   IST: 'Asia/Kolkata', JST: 'Asia/Tokyo', SGT: 'Asia/Singapore', AEDT: 'Australia/Sydney', AEST: 'Australia/Sydney',
+  AET: 'Australia/Sydney', KST: 'Asia/Seoul', HKT: 'Asia/Hong_Kong', EET: 'Europe/Bucharest', EEST: 'Europe/Bucharest',
+};
+// no zone on the date line: an in-person event tagged with one office is in that office's time
+const REGION_TZ = {
+  Austin: 'America/Chicago', Chicago: 'America/Chicago', Denver: 'America/Denver', Lehi: 'America/Denver',
+  'Los Angeles': 'America/Los_Angeles', 'San Francisco': 'America/Los_Angeles', 'San Jose': 'America/Los_Angeles',
+  Seattle: 'America/Los_Angeles', 'New York': 'America/New_York', 'McLean (DC)': 'America/New_York',
+  Waltham: 'America/New_York', Ottawa: 'America/Toronto', London: 'Europe/London', Reading: 'Europe/London',
+  Edinburgh: 'Europe/London', Dublin: 'Europe/Dublin', Paris: 'Europe/Paris', Hamburg: 'Europe/Berlin',
+  Munich: 'Europe/Berlin', Basel: 'Europe/Zurich', Bucharest: 'Europe/Bucharest', Yerevan: 'Asia/Yerevan',
+  Bangalore: 'Asia/Kolkata', Noida: 'Asia/Kolkata', Singapore: 'Asia/Singapore', 'Hong Kong': 'Asia/Hong_Kong',
+  China: 'Asia/Shanghai', Seoul: 'Asia/Seoul', Tokyo: 'Asia/Tokyo', Sydney: 'Australia/Sydney',
+  Melbourne: 'Australia/Melbourne',
 };
 const pad = (n) => String(n).padStart(2, '0');
 
@@ -27,7 +41,7 @@ export function parseWhen(text) {
     .map(([, m, d, y]) => `${y}-${pad(MONTHS[m.toLowerCase()])}-${pad(d)}`);
   if (!dates.length) return {};
   const t = (text.split('|')[1] || '')
-    .match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*[-–]\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)\s*([A-Z]{2,4})?/i);
+    .match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*[-–]\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)\s*\(?([A-Z]{2,4})?/i);
   if (!t) return { start: dates[0], end: dates[dates.length - 1] };
   const [, sh, sm, sap, eh, em, eap, zone] = t;
   const hour = (h, ap) => (Number(h) % 12) + (ap.toLowerCase() === 'pm' ? 12 : 0);
@@ -46,7 +60,7 @@ export default {
     const { document, params } = payload;
     const main = document.body;
     const source = new URL(params.originalURL);
-    const path = source.pathname.replace(/^\/content\/inside\/en(?=[/.])/, '').replace(/\.html$/, '');
+    const path = sitePath(source.pathname);
 
     const content = document.querySelector('.event-content-container');
     const when = parseWhen(content?.querySelector('.event-list-item-date')?.textContent.replace(/\s+/g, ' ').trim() || '');
@@ -77,21 +91,14 @@ export default {
     }
     cleanupTransformer('afterTransform', main, payload);
 
-    // intranet page links → site paths; documents stay on the intranet for now
-    main.querySelectorAll('a[href]').forEach((a) => {
-      let url;
-      try { url = new URL(a.getAttribute('href'), 'https://inside.corp.adobe.com'); } catch { return; }
-      if (!/^(inside\.corp\.adobe\.com|127\.0\.0\.1(:\d+)?)$/.test(url.host) || a.getAttribute('href').startsWith('#')) return;
-      if (url.pathname.startsWith('/content/dam/')) { a.href = `https://inside.corp.adobe.com${url.pathname}`; return; }
-      a.href = `${url.pathname.replace(/^\/content\/inside\/en(?=[/.])/, '').replace(/\.html$/, '') || '/'}${url.search}${url.hash}`;
-    });
+    rewriteLinks(main);
 
     main.append(document.createElement('hr'));
     main.append(WebImporter.Blocks.getMetadataBlock(document, {
       Title: document.title,
       Template: 'event',
       ...(when.start && { 'Event Start': when.start, 'Event End': when.end }),
-      ...(when.tz && { 'Event Time Zone': when.tz }),
+      ...(when.start?.includes('T') && (when.tz || REGION_TZ[region]) && { 'Event Time Zone': when.tz || REGION_TZ[region] }),
       ...(type && { 'Event Type': type }),
       ...(region && { 'Event Region': region }),
     }));

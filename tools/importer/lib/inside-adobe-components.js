@@ -36,9 +36,22 @@ const TOOLS = {
   eventform: 'event submission form',
 };
 
-// Intranet URL → site path: drop host, /content/inside/en and .html
+// Intranet names that clean to the same name as another article
+const RENAMED = {
+  '/news/2026/09/staying-well-this-flu-season-': '/news/2026/09/staying-well-this-flu-season-canada',
+  '/news/2026/01/open-enrolment-begins-today-': '/news/2026/01/open-enrolment-begins-today-ireland',
+  '/news/2026/01/open-enrolment-begins-today--': '/news/2026/01/open-enrolment-begins-today-france',
+};
+// Edge Delivery serves a document under a cleaned name (lowercase, runs of anything but letters and
+// digits → one '-', no '-' at either end), so documents must be named that way to be previewable
+const cleanName = (s) => s.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+// Intranet URL → site path: drop host, /content/inside/en and .html, clean each name
 export function sitePath(url) {
-  return url.replace(/^\/content\/inside\/en(?=[/.])/, '').replace(/^\.html$/, '/').replace(/\.html$/, '') || '/';
+  let path = url.replace(/^\/content\/inside\/en(?=[/.])/, '').replace(/^\.html$/, '/').replace(/\.html$/, '') || '/';
+  path = RENAMED[path] || path;
+  return path.split('/').map((s) => (/\.[a-z0-9]{2,4}$/i.test(s) ? s : cleanName(s))).join('/') || '/';
 }
 
 // FNV-1a 32-bit of the text without scripts/styles/svg, lowercased, letters and digits only
@@ -192,6 +205,11 @@ export function rewriteLinks(root) {
     const href = a.getAttribute('href');
     let url;
     try { url = new URL(href, INTRANET); } catch { return; }
+    // YouTube links (channels, playlists, videos in a sentence) were links on the intranet: keep
+    // them links rather than letting the youtube auto-block embed them
+    if (/(^|\.)youtube\.com$/.test(url.host) && !url.hash) { a.href = `${url.href}#_dnb`; return; }
+    // people and profile links opened an intranet panel (employee directory, profile); it stays there
+    if (url.searchParams.has('flyouttab')) { a.href = `${INTRANET}/home.html${url.search}`; return; }
     const local = /^(127\.0\.0\.1|localhost)(:\d+)?$/.test(url.host);
     if (!(url.origin === INTRANET || local)) return;
     if (url.pathname.startsWith('/content/dam/')) { a.href = `${INTRANET}${url.pathname}`; return; } // documents: moved later

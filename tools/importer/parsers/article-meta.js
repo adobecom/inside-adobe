@@ -4,7 +4,8 @@
  * Parser for article-meta: news article tags and publish date.
  *   row 1: collection tag link | topic tag link(s)
  *   row 2: the publish date as shown on the page
- * Source: .articletags (.collection-tag, .primary-tag) and the sibling .articledate.
+ *   row 3 (optional): the office locations the article is tagged with, as a list
+ * Source: .articletags (.collection-tag, .primary-tag, .geo-tag) and the sibling .articledate.
  */
 export default function parse(element, { document }) {
   const link = (a) => {
@@ -21,6 +22,13 @@ export default function parse(element, { document }) {
   if (date) {
     cells.push([date.textContent.trim()]);
     date.closest('.articledate').remove();
+  }
+  const places = [...element.querySelectorAll('.geo-tag-item')].map((li) => li.textContent.trim());
+  if (places.length) {
+    if (!date) cells.push(['']);
+    const ul = document.createElement('ul');
+    places.forEach((place) => { const li = document.createElement('li'); li.textContent = place; ul.append(li); });
+    cells.push([ul]);
   }
   const block = WebImporter.Blocks.createBlock(document, { name: 'article-meta', cells });
   element.replaceWith(block);
