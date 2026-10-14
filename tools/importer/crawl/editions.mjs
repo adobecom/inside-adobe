@@ -62,7 +62,6 @@ async function openPicker() {
   else await page.locator('.gnav-edition').first().evaluate((el) => el.click());
   const modal = page.locator('.edition-modal:visible').first();
   await modal.waitFor({ state: 'visible', timeout: 15000 });
-  for (const b of await modal.locator('.accordion-heading[aria-expanded="false"]:visible').all()) await b.click();
   await page.waitForFunction(
     () => document.querySelectorAll('.edition-list-office li, .edition-list-remote li').length > 0,
     null,
@@ -97,6 +96,10 @@ async function switchTo(edition) {
   // exact name, so "United States" can't pick a longer name that contains it
   const exact = new RegExp(`^\\s*${edition.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`);
   const item = page.locator('.edition-modal:visible li').filter({ hasText: exact }).first();
+  // open only the section (offices / remote) that holds this edition
+  const heading = item.locator('xpath=ancestor::*[contains(@class, "accordion-item")][1]//*[contains(@class, "accordion-heading") and @aria-expanded]').first();
+  if (await heading.count() && await heading.getAttribute('aria-expanded') !== 'true') await heading.click();
+  await item.waitFor({ state: 'visible', timeout: 15000 });
   const target = item.locator('a, button, [role="button"], input').first();
   await Promise.all([
     page.waitForLoadState('load', { timeout: 30000 }).catch(() => {}),
@@ -162,8 +165,10 @@ for (const [i, e] of run.entries()) {
 // back to the edition you started with
 if (original) {
   const back = editions.find((e) => e.name === original);
-  if (back) console.log(`Switched back to: ${await switchTo(back)}`);
-  else console.log(`Could not find "${original}" in the picker: switch back in the browser window.`);
+  const failed = (e) => `FAILED (${brief(e.message)})`;
+  const shown = back ? await switchTo(back).catch(failed) : 'not in the picker';
+  console.log(`Switching back to ${original}: ${shown}`);
+  if (shown !== original) console.log('>>> Switch your edition back in the intranet header.');
 }
 
 const urls = new Set(Object.values(result.landings)
