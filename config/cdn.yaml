@@ -5,6 +5,29 @@ metadata:
 data:
   redirects:
     rules:
+      # intranet long form: /content/inside/en/<path>.html → /<path> (renamed pages then go
+      # through the /redirects sheet)
+      - name: remove-legacy-prefix
+        when:
+          allOf:
+            - reqProperty: domain
+              equals: "preview.inside.adobe.com"
+            - reqProperty: path
+              matches: '^/content/inside/en(/|\.html$|$)'
+            - reqProperty: path
+              doesNotMatch: '\.plain\.html$'
+        action:
+          type: redirect
+          status: 301
+          location:
+            reqProperty: url
+            transform:
+              - op: replace
+                match: '^/content/inside/en(\.html|/)?'
+                replacement: '/'
+              - op: replace
+                match: '\.html(\?.*)?$'
+                replacement: '\1'
       - name: remove-html-extension
         when:
           allOf:
