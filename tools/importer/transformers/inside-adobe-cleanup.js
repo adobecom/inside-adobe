@@ -149,14 +149,27 @@ export default function transform(hookName, element, payload) {
     // (after the span unwrap above, so links nested in spans are found too)
     // A bold/italic run holding a link plus other text would become a button that swallows the
     // text (ak.js decorateButton only checks the paragraph); take the link out of the run
-    // (links are bold here anyway). Emphasis inside the link would be merged back by markdown.
-    content.querySelectorAll('strong > a, em > a, b > a, i > a').forEach((a) => {
-      const wrap = a.parentElement;
-      if (wrap.textContent.trim() === a.textContent.trim()) return;
-      const after = wrap.cloneNode(false);
-      while (a.nextSibling) after.append(a.nextSibling);
-      wrap.after(a, after);
-      [wrap, after].forEach((w) => { if (!w.textContent.trim()) w.remove(); });
+    // (links are bold here anyway), from every level of a nested run such as <i>… <b><a>.
+    content.querySelectorAll(':is(strong, em, b, i) a').forEach((a) => {
+      let top;
+      for (let w = a.parentElement; w.matches('strong, em, b, i, span'); w = w.parentElement) {
+        if (w.localName !== 'span') top = w;
+      }
+      if (!top || top.textContent.trim() === a.textContent.trim()) return;
+      const range = doc.createRange();
+      range.setStartBefore(top);
+      range.setEndBefore(a);
+      const before = range.extractContents();
+      range.setStartAfter(a);
+      range.setEndAfter(top);
+      const after = range.extractContents();
+      top.replaceWith(before, a, after);
+    });
+    // <a><b>…</b></a><b>…</b> (touching) merges into one run in markdown, with the same result
+    content.querySelectorAll('a:has(strong, em, b, i)').forEach((a) => {
+      if ([a.previousSibling, a.nextSibling].some((n) => n?.matches?.('strong, em, b, i') && n.textContent.trim())) {
+        a.querySelectorAll('strong, em, b, i').forEach(unwrap);
+      }
     });
 
     // &nbsp; noise: normalize to plain spaces, drop whitespace-only inline wrappers and paragraphs
@@ -166,8 +179,17 @@ export default function transform(hookName, element, payload) {
     texts.forEach((t) => {
       if (t.nodeValue.includes(' ')) t.nodeValue = t.nodeValue.replace(/ /g, ' ');
     });
+    // markdown drops a <br> at the edge of an emphasis run: move it (and edge spaces) outside
+    const edge = (n) => n && (n.nodeName === 'BR' || (n.nodeType === 3 && !n.nodeValue.trim()));
+    content.querySelectorAll('b, i, strong, em').forEach((el) => {
+      if (!el.textContent.trim()) return;
+      while (edge(el.firstChild)) el.before(el.firstChild);
+      while (edge(el.lastChild)) el.after(el.lastChild);
+    });
     content.querySelectorAll('b, i, strong, em, span').forEach((el) => {
-      if (!el.textContent.trim() && !el.querySelector('img, picture, br, a')) el.replaceWith(doc.createTextNode(' '));
+      if (el.textContent.trim() || el.querySelector('img, picture, a')) return;
+      // keep line breaks: markdown drops a <br> left alone inside emphasis
+      el.replaceWith(...(el.querySelector('br') ? el.childNodes : [doc.createTextNode(' ')]));
     });
     content.querySelectorAll('p').forEach((p) => {
       if (!p.textContent.trim() && !p.querySelector('img, picture, a, table')) p.remove();

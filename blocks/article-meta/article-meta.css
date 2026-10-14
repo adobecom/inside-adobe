@@ -1,4 +1,6 @@
 .article-meta {
+  display: flex;
+  flex-direction: column;
   max-width: var(--grid-container-width);
   margin-inline: auto;
 
@@ -31,7 +33,30 @@
     color: #fff;
   }
 
+  /* row 3: locations, shown under the tags, above the date */
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 10px 0 0;
+    padding: 0;
+    color: #2f2f2f;
+    font-size: var(--body-font-size-m);
+    font-style: italic;
+    line-height: normal;
+    list-style: none;
+  }
+
+  li {
+    white-space: nowrap;
+  }
+
+  li:not(:last-child)::after {
+    content: '|';
+    padding-inline: 0.45rem;
+  }
+
   > div:nth-child(2) {
+    order: 1;
     margin-top: 16px;
     color: #4b4b4b;
     font-size: var(--body-font-size-m);

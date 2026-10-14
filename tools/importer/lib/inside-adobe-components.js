@@ -192,6 +192,9 @@ export function rewriteLinks(root) {
     const href = a.getAttribute('href');
     let url;
     try { url = new URL(href, INTRANET); } catch { return; }
+    // YouTube links (channels, playlists, videos in a sentence) were links on the intranet: keep
+    // them links rather than letting the youtube auto-block embed them
+    if (/(^|\.)youtube\.com$/.test(url.host) && !url.hash) { a.href = `${url.href}#_dnb`; return; }
     const local = /^(127\.0\.0\.1|localhost)(:\d+)?$/.test(url.host);
     if (!(url.origin === INTRANET || local)) return;
     if (url.pathname.startsWith('/content/dam/')) { a.href = `${INTRANET}${url.pathname}`; return; } // documents: moved later
