@@ -48,13 +48,21 @@ if (!page.url().startsWith(SITE) || await page.locator('input[type="password"]')
 }
 await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {});
 
-const current = async () => (await page.locator('.gnav-edition').first().textContent().catch(() => '') || '').trim();
+const current = async () => {
+  const visible = page.locator('.gnav-edition:visible').first();
+  const button = await visible.count() ? visible : page.locator('.gnav-edition').first();
+  return (await button.textContent().catch(() => '') || '').trim();
+};
 
 // open the picker and read the editions (the lists are filled in by the site's script)
 async function openPicker() {
-  await page.locator('.gnav-edition').first().click();
-  await page.locator('.edition-modal').first().waitFor({ state: 'visible', timeout: 15000 });
-  for (const b of await page.locator('.edition-modal .accordion-heading[aria-expanded="false"]').all()) await b.click();
+  // the header has a desktop and a mobile edition button; only one is visible
+  const button = page.locator('.gnav-edition:visible').first();
+  if (await button.count()) await button.click();
+  else await page.locator('.gnav-edition').first().evaluate((el) => el.click());
+  const modal = page.locator('.edition-modal:visible').first();
+  await modal.waitFor({ state: 'visible', timeout: 15000 });
+  for (const b of await modal.locator('.accordion-heading[aria-expanded="false"]:visible').all()) await b.click();
   await page.waitForFunction(
     () => document.querySelectorAll('.edition-list-office li, .edition-list-remote li').length > 0,
     null,
@@ -86,7 +94,9 @@ async function switchTo(edition) {
   await page.goto(`${SITE}/home.html`, { waitUntil: 'domcontentloaded' });
   await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {});
   await openPicker();
-  const item = page.locator('.edition-list-office li, .edition-list-remote li').filter({ hasText: edition.name }).first();
+  // exact name, so "United States" can't pick a longer name that contains it
+  const exact = new RegExp(`^\\s*${edition.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`);
+  const item = page.locator('.edition-modal:visible li').filter({ hasText: exact }).first();
   const target = item.locator('a, button, [role="button"], input').first();
   await Promise.all([
     page.waitForLoadState('load', { timeout: 30000 }).catch(() => {}),
