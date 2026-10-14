@@ -52,6 +52,7 @@ repository.
 |---|---|
 | Re-crawl leftovers | The re-crawl's 153 "new" URLs were mostly second addresses of migrated pages; the 93 new events are in DA. Left out: `/benefits-wellbeing/emotional-wellbeing/romania` (Romania edition, US only by decision). |
 | Linked documents left | 54 links still point to `inside.corp.adobe.com`. **Decision needed** for 28: 22 Word/Excel/PowerPoint files and 6 PDFs over 20 MB, which Edge Delivery can't serve (aem.live/docs/limits). Also 12 images linked as downloads (not crawled), 11 already 404 on the intranet, 3 never fetched. |
+| Re-save incident (2026-10-14) | Between 04:25 and 04:59 UTC an unidentified tool re-saved every DA document, pointing images at page-folder copies it never created (images broke in preview) and rewriting `#` links to `/`. All documents were restored from the import and verified; the re-saved versions are backed up locally. Don't run bulk tools that rewrite media or links on this content. |
 | Redirects | Sheet `/redirects` in DA (95 rows, §4.6); takes effect once previewed and published. Old `.html` / `/content/inside/en/…` addresses are not in it (only matter if the intranet hostname moves to Edge Delivery). |
 | Other editions | Only the US edition was crawled (24 US-specific pages, e.g. `…/health-insurance/us`). Other countries deferred. |
 | Production hostname, locales | `scripts/scripts.js` still has the template's `hostnames = ['authorkit.dev']` and template locale list. |
@@ -196,6 +197,10 @@ Things to know:
 - **Intranet panel links** (`?flyouttab=employeeDirectory&uid=…`, profile, quick links, learning
   resources, notifications: 493 links, mostly people's names) point to
   `inside.corp.adobe.com/home.html?flyouttab=…`; the new site has no directory or profile panel.
+- **Page names** are cleaned the way Edge Delivery names web paths (lowercase, runs of anything but
+  letters and digits → one `-`, no `-` at either end); a document under any other name can't be
+  previewed. Two intranet names that clean to an existing article get a country suffix (`RENAMED`
+  in `lib/inside-adobe-components.js`). Links and redirects go through the same `sitePath`.
 - **Bundles** (`*.bundle.js`), reports and imported content aren't committed.
 
 ### 3.4 How the migration was run (local)

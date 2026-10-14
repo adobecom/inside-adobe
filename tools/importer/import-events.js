@@ -10,7 +10,7 @@
  */
 import cleanupTransformer from './transformers/inside-adobe-cleanup.js';
 import eventParser from './parsers/event.js';
-import { rewriteLinks } from './lib/inside-adobe-components.js';
+import { sitePath, rewriteLinks } from './lib/inside-adobe-components.js';
 
 const MONTHS = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
 const TZ = {
@@ -60,7 +60,7 @@ export default {
     const { document, params } = payload;
     const main = document.body;
     const source = new URL(params.originalURL);
-    const path = source.pathname.replace(/^\/content\/inside\/en(?=[/.])/, '').replace(/\.html$/, '');
+    const path = sitePath(source.pathname);
 
     const content = document.querySelector('.event-content-container');
     const when = parseWhen(content?.querySelector('.event-list-item-date')?.textContent.replace(/\s+/g, ' ').trim() || '');

@@ -36,9 +36,22 @@ const TOOLS = {
   eventform: 'event submission form',
 };
 
-// Intranet URL → site path: drop host, /content/inside/en and .html
+// Intranet names that clean to the same name as another article
+const RENAMED = {
+  '/news/2026/09/staying-well-this-flu-season-': '/news/2026/09/staying-well-this-flu-season-canada',
+  '/news/2026/01/open-enrolment-begins-today-': '/news/2026/01/open-enrolment-begins-today-ireland',
+  '/news/2026/01/open-enrolment-begins-today--': '/news/2026/01/open-enrolment-begins-today-france',
+};
+// Edge Delivery serves a document under a cleaned name (lowercase, runs of anything but letters and
+// digits → one '-', no '-' at either end), so documents must be named that way to be previewable
+const cleanName = (s) => s.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+// Intranet URL → site path: drop host, /content/inside/en and .html, clean each name
 export function sitePath(url) {
-  return url.replace(/^\/content\/inside\/en(?=[/.])/, '').replace(/^\.html$/, '/').replace(/\.html$/, '') || '/';
+  let path = url.replace(/^\/content\/inside\/en(?=[/.])/, '').replace(/^\.html$/, '/').replace(/\.html$/, '') || '/';
+  path = RENAMED[path] || path;
+  return path.split('/').map((s) => (/\.[a-z0-9]{2,4}$/i.test(s) ? s : cleanName(s))).join('/') || '/';
 }
 
 // FNV-1a 32-bit of the text without scripts/styles/svg, lowercased, letters and digits only
