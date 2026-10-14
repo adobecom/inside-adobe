@@ -25,12 +25,13 @@ const { values: opts } = parseArgs({
 });
 
 const SITE = 'https://inside.corp.adobe.com';
-// topics that send each person to their edition's page (…/us, …/default on the US edition)
+// topics that send each person to their own version (…/us, …/north-america, …/default for US)
 const TOPICS = [
   '/benefits-wellbeing/discounts', '/benefits-wellbeing/emotional-wellbeing', '/benefits-wellbeing/espp',
   '/benefits-wellbeing/health-insurance', '/benefits-wellbeing/physical-wellbeing',
   '/benefits-wellbeing/retirement-financial', '/benefits-wellbeing/time-off', '/compensation-pay/lti',
-  '/compensation-pay/payroll', '/compensation-pay/sti', '/computers-devices/hw-standards', '/travel/reservations',
+  '/compensation-pay/payroll', '/compensation-pay/sti', '/computers-devices/hw-standards',
+  '/computers-devices/computers', '/travel/reservations',
   '/career-growth/check-in', '/career-growth/promotions', '/career-growth/rewards', '/hybridwork/managers',
   '/managing-at-adobe/people-leader-hub', '/university/managers',
 ];

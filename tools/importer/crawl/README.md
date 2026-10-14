@@ -41,18 +41,19 @@ Useful options:
 | `--with-docs` | off | Also download linked PDFs and Office files from the DAM (works on a finished crawl too: re-run with it to fetch just the documents) |
 | `--no-follow` | off | Only crawl the start URLs / list, don't follow links |
 | `--news-archive` | off | Page through the news listing's feed and crawl every article in it, including ones nothing links to; raw feed responses go in `_feeds/` |
+| `--retry-failed` | off | Crawl pages again that failed to load last time (network errors; 404s stay) |
 
 A first test run: `node tools/importer/crawl/crawl.mjs --max 50`.
 
 ## Other editions
 
-18 topics send each person to their own version: 12 by country (health insurance, time off,
-payroll…; about 37 countries each) and 6 by role (check-in, promotions…; `default` and `manager`).
+19 topics send each person to their own version: 13 by country (health insurance, time off,
+payroll, computers…; up to 37 countries each) and 6 by role (check-in, promotions…; `default` and `manager`).
 `editions.mjs --topics` lists every version without changing anything in your profile:
 
 ```sh
 node tools/importer/crawl/editions.mjs --topics  # no switching: topic pages, listings, urls.txt
-node tools/importer/crawl/crawl.mjs --urls inside-mirror/_editions/urls.txt --with-docs
+node tools/importer/crawl/crawl.mjs --urls inside-mirror/_editions/urls.txt --with-docs --retry-failed
 ```
 
 `--topics` reads each topic's child pages (country and manager versions) from AEM's page listing
