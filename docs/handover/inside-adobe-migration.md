@@ -44,13 +44,14 @@ repository.
 | News Article | 281 | In DA, full archive from the news feed (the feed counts 285; 283 crawled, 281 unique). The Cybersecurity article was previewed early, before its re-import |
 | Shared content | 84 section menus, 54 shared fragments, header, footer | In DA |
 | Images | ~1,500 | In DA under `/dam/…` (intranet DAM paths, lowercased) |
+| Documents | 1,052 PDFs | In DA under `/dam/…`; every page link to them rewritten (277 pages). Not previewed: preview each PDF before it can be downloaded from the site |
 
 ### Also outstanding
 
 | Item | Detail |
 |---|---|
 | Re-crawl leftovers | The re-crawl's 153 "new" URLs were mostly second addresses of migrated pages; the 93 new events are in DA. Left out: `/benefits-wellbeing/emotional-wellbeing/romania` (Romania edition, US only by decision). |
-| Linked documents | ~1,060 PDFs/Office files on the intranet DAM, downloaded by the `--with-docs` crawl (largest 54 MB). Links still point to `inside.corp.adobe.com`; decision is to move them into DA and rewrite links. |
+| Linked documents left | 54 links still point to `inside.corp.adobe.com`. **Decision needed** for 28: 22 Word/Excel/PowerPoint files and 6 PDFs over 20 MB, which Edge Delivery can't serve (aem.live/docs/limits). Also 12 images linked as downloads (not crawled), 11 already 404 on the intranet, 3 never fetched. |
 | Redirects | 47 old → new redirects plus 43 alias URLs were recorded by the crawl; not yet in a redirects sheet. |
 | Other editions | Only the US edition was crawled (24 US-specific pages, e.g. `…/health-insurance/us`). Other countries deferred. |
 | Production hostname, locales | `scripts/scripts.js` still has the template's `hostnames = ['authorkit.dev']` and template locale list. |
@@ -70,6 +71,7 @@ repository.
 |---|---|
 | Pages | same path as the intranet page without `/content/inside/en` and `.html`, e.g. `/benefits-wellbeing/health-insurance/us`, `/events/2026/10/<slug>`, `/news/2026/09/<slug>`; homepage `/index` |
 | Images | `/dam/<intranet DAM path>` (lowercase), shared by all pages |
+| Documents (PDF) | `/dam/<intranet DAM path>`, lowercase, accents removed, anything but letters/digits/`/` → `-` (e.g. `…/restroom_noida132.pdf` → `…/restroom-noida132.pdf`) |
 | Header / footer | `/fragments/nav/header`, `/fragments/nav/footer` |
 | Section menus | `/fragments/side-nav/<section>` (e.g. `benefits-wellbeing`, `offices-san-jose`) |
 | Shared content | `/fragments/shared/<name>` (e.g. `offices-printers`, `travel-paying-for-your-trip`) |
