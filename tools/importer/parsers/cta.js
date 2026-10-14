@@ -15,6 +15,13 @@ export default function parse(element, { document }) {
     h3.textContent = title.textContent.trim();
     cell.push(h3);
   }
+  // a description typed as plain text in a div (no paragraph): make it one
+  box.querySelectorAll('.call-to-action-desc div').forEach((div) => {
+    if (div.querySelector('p, ul, ol, div') || !div.textContent.trim()) return;
+    const p = document.createElement('p');
+    p.append(...div.childNodes);
+    div.replaceWith(p);
+  });
   // paragraphs and lists, in order (outermost only)
   box.querySelectorAll('p, ul, ol').forEach((n) => {
     if (!n.parentElement.closest('p, ul, ol') && !n.contains(button)) cell.push(n);
