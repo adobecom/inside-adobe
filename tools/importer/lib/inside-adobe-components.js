@@ -195,6 +195,8 @@ export function rewriteLinks(root) {
     // YouTube links (channels, playlists, videos in a sentence) were links on the intranet: keep
     // them links rather than letting the youtube auto-block embed them
     if (/(^|\.)youtube\.com$/.test(url.host) && !url.hash) { a.href = `${url.href}#_dnb`; return; }
+    // people and profile links opened an intranet panel (employee directory, profile); it stays there
+    if (url.searchParams.has('flyouttab')) { a.href = `${INTRANET}/home.html${url.search}`; return; }
     const local = /^(127\.0\.0\.1|localhost)(:\d+)?$/.test(url.host);
     if (!(url.origin === INTRANET || local)) return;
     if (url.pathname.startsWith('/content/dam/')) { a.href = `${INTRANET}${url.pathname}`; return; } // documents: moved later

@@ -52,7 +52,7 @@ repository.
 |---|---|
 | Re-crawl leftovers | The re-crawl's 153 "new" URLs were mostly second addresses of migrated pages; the 93 new events are in DA. Left out: `/benefits-wellbeing/emotional-wellbeing/romania` (Romania edition, US only by decision). |
 | Linked documents left | 54 links still point to `inside.corp.adobe.com`. **Decision needed** for 28: 22 Word/Excel/PowerPoint files and 6 PDFs over 20 MB, which Edge Delivery can't serve (aem.live/docs/limits). Also 12 images linked as downloads (not crawled), 11 already 404 on the intranet, 3 never fetched. |
-| Redirects | 47 old → new redirects plus 43 alias URLs were recorded by the crawl; not yet in a redirects sheet. |
+| Redirects | Sheet `/redirects` in DA (95 rows, §4.6); takes effect once previewed and published. Old `.html` / `/content/inside/en/…` addresses are not in it (only matter if the intranet hostname moves to Edge Delivery). |
 | Other editions | Only the US edition was crawled (24 US-specific pages, e.g. `…/health-insurance/us`). Other countries deferred. |
 | Production hostname, locales | `scripts/scripts.js` still has the template's `hostnames = ['authorkit.dev']` and template locale list. |
 | Block library | New blocks aren't registered in the DA block library. |
@@ -193,6 +193,9 @@ Things to know:
   (nested runs and spans included), and out of a run it touches, so `decorateButton` can't turn the
   paragraph into a text-dropping button.
 - **YouTube links** get `#_dnb`: they were links on the intranet, not embeds.
+- **Intranet panel links** (`?flyouttab=employeeDirectory&uid=…`, profile, quick links, learning
+  resources, notifications: 493 links, mostly people's names) point to
+  `inside.corp.adobe.com/home.html?flyouttab=…`; the new site has no directory or profile panel.
 - **Bundles** (`*.bundle.js`), reports and imported content aren't committed.
 
 ### 3.4 How the migration was run (local)
@@ -279,13 +282,30 @@ sign-in. Confirm the allowed users in the Config Service `access` settings befor
 `main` serves merged code; branch previews serve their branch's code, so reviews can use the
 branch URL (sign-in required).
 
-### 4.6 News index
+### 4.6 Redirects
+
+`/redirects` (DA sheet, columns Source, Destination, Note; Edge Delivery reads the first two).
+Built by `.migration/scripts/build_redirects.py` from the crawl and the news feed:
+
+| Rows | What |
+|---|---|
+| 61 | Intranet redirects between pages (e.g. `/benefits-wellbeing/health-insurance` → `…/us`) |
+| 25 | Intranet pages and news items that redirected to another site (blog.adobe.com, max.adobe.com, Navan…) |
+| 5 | News items that opened a PDF; the PDFs weren't crawled, so they still point to the intranet |
+| 4 | `/home` → `/`, and three links already broken on the intranet with a clear new page (Founders Award, Tech Award, VIA) |
+
+Redirects win over pages at the same path; none of the sources is a migrated page. Preview and
+publish `/redirects` like a page. Still dead (not redirected): office "activities" pages that
+never existed (Ottawa, Denver, Los Angeles), `/adobe-life/communities…`, intranet search, a few
+malformed source links and calendar files for events that weren't crawled.
+
+### 4.7 News index
 
 `helix-query.yaml` defines the `news` index (merged with PR #3). Preview/publish the news pages
 and check `/news/query-index.json`; if the Config Service has its own index configuration, it
 overrides the file. Re-index a page with the `index` Admin API call.
 
-### 4.7 Permissions and credentials
+### 4.8 Permissions and credentials
 
 - DA uploads used the Adobe-credentials permission and GitHub access used a fine-grained token,
   both set in Settings → LLM Permissions. Revoke or rotate them when no longer needed.

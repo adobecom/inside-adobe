@@ -1,7 +1,7 @@
 /* eslint-disable */
 /* global WebImporter */
 /**
- * Import for the intranet's "Event" template (149 pages), from the local mirror.
+ * Import for the intranet's "Event" template (242 pages), from the local mirror.
  * Page: More Events button, then the event block (parsers/event.js), then metadata:
  *   Template: event; Event Start / Event End (YYYY-MM-DD, or YYYY-MM-DDTHH:MM when timed);
  *   Event Time Zone (IANA, when the source names one); Event Type; Event Region.
@@ -10,6 +10,7 @@
  */
 import cleanupTransformer from './transformers/inside-adobe-cleanup.js';
 import eventParser from './parsers/event.js';
+import { rewriteLinks } from './lib/inside-adobe-components.js';
 
 const MONTHS = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
 const TZ = {
@@ -90,14 +91,7 @@ export default {
     }
     cleanupTransformer('afterTransform', main, payload);
 
-    // intranet page links → site paths; documents stay on the intranet for now
-    main.querySelectorAll('a[href]').forEach((a) => {
-      let url;
-      try { url = new URL(a.getAttribute('href'), 'https://inside.corp.adobe.com'); } catch { return; }
-      if (!/^(inside\.corp\.adobe\.com|127\.0\.0\.1(:\d+)?)$/.test(url.host) || a.getAttribute('href').startsWith('#')) return;
-      if (url.pathname.startsWith('/content/dam/')) { a.href = `https://inside.corp.adobe.com${url.pathname}`; return; }
-      a.href = `${url.pathname.replace(/^\/content\/inside\/en(?=[/.])/, '').replace(/\.html$/, '') || '/'}${url.search}${url.hash}`;
-    });
+    rewriteLinks(main);
 
     main.append(document.createElement('hr'));
     main.append(WebImporter.Blocks.getMetadataBlock(document, {

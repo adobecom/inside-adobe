@@ -165,9 +165,13 @@ export default function transform(hookName, element, payload) {
       const after = range.extractContents();
       top.replaceWith(before, a, after);
     });
-    // <a><b>…</b></a><b>…</b> (touching) merges into one run in markdown, with the same result
+    // <a><b>…</b></a><b>…</b> (touching, same kind) merges into one run in markdown, with the same result
+    const kind = (n) => ({ b: 'strong', i: 'em' }[n.localName] || n.localName);
     content.querySelectorAll('a:has(strong, em, b, i)').forEach((a) => {
-      if ([a.previousSibling, a.nextSibling].some((n) => n?.matches?.('strong, em, b, i') && n.textContent.trim())) {
+      const inner = new Set([...a.querySelectorAll('strong, em, b, i')].map(kind));
+      const touches = (n) => n?.matches?.('strong, em, b, i') && n.textContent.trim()
+        && [n, ...n.querySelectorAll('strong, em, b, i')].some((e) => inner.has(kind(e)));
+      if (touches(a.previousSibling) || touches(a.nextSibling)) {
         a.querySelectorAll('strong, em, b, i').forEach(unwrap);
       }
     });
