@@ -3,6 +3,26 @@ version: "1"
 metadata:
   envTypes: ["prod"]
 data:
+  redirects:
+    rules:
+      - name: remove-html-extension
+        when:
+          allOf:
+            - reqProperty: domain
+              equals: "preview.inside.adobe.com"
+            - reqProperty: path
+              matches: '\.html$'
+            - reqProperty: path
+              doesNotMatch: '\.plain\.html$'
+        action:
+          type: redirect
+          status: 301
+          location:
+            reqProperty: url
+            transform:
+              - op: replace
+                match: '\.html(\?.*)?$'
+                replacement: '\1'
   originSelectors:
     rules:
       - name: eds-origin-rule

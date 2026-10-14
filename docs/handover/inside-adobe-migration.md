@@ -53,7 +53,7 @@ repository.
 | Re-crawl leftovers | The re-crawl's 153 "new" URLs were mostly second addresses of migrated pages; the 93 new events are in DA. Left out: `/benefits-wellbeing/emotional-wellbeing/romania` (Romania edition, US only by decision). |
 | Linked documents left | 54 links still point to `inside.corp.adobe.com`. **Decision needed** for 28: 22 Word/Excel/PowerPoint files and 6 PDFs over 20 MB, which Edge Delivery can't serve (aem.live/docs/limits). Also 12 images linked as downloads (not crawled), 11 already 404 on the intranet, 3 never fetched. |
 | Re-save incident (2026-10-14) | Between 04:25 and 04:59 UTC an unidentified tool re-saved every DA document, pointing images at page-folder copies it never created (images broke in preview) and rewriting `#` links to `/`. All documents were restored from the import and verified; the re-saved versions are backed up locally. Don't run bulk tools that rewrite media or links on this content. |
-| Redirects | Sheet `/redirects` in DA (95 rows, §4.6); takes effect once previewed and published. Old `.html` / `/content/inside/en/…` addresses are not in it (only matter if the intranet hostname moves to Edge Delivery). |
+| Redirects | Sheet `/redirects` in DA (95 rows, §4.6); takes effect once previewed and published. CDN suffix removal for `preview.inside.adobe.com` is configured in `config/cdn.yaml` but needs a Cloud Manager deployment. Legacy `/content/inside/en/…` paths are not covered. |
 | Other editions | Only the US edition was crawled (24 US-specific pages, e.g. `…/health-insurance/us`). Other countries deferred. |
 | Production hostname, locales | `scripts/scripts.js` still has the template's `hostnames = ['authorkit.dev']` and template locale list. |
 | Block library | New blocks aren't registered in the DA block library. |
@@ -288,6 +288,21 @@ sign-in. Confirm the allowed users in the Config Service `access` settings befor
 branch URL (sign-in required).
 
 ### 4.6 Redirects
+
+`config/cdn.yaml` configures a CDN 301 redirect from paths ending in `.html` to their
+extensionless equivalent on `preview.inside.adobe.com`. Query strings are preserved;
+`.plain.html` fragment requests are excluded. Deploy the `config` directory through the
+Cloud Manager configuration pipeline for the domain (Edge Delivery pipeline for an Edge
+Delivery Site, or Targeted Deployment > Config for a Publish environment). DA publication
+and AEM Code Sync do not deploy this configuration. Keep `envTypes: ["prod"]` for Edge
+Delivery, including the preview hostname.
+
+After deployment, check that
+`curl -I 'https://preview.inside.adobe.com/benefits-wellbeing/health-insurance/us.html?source=email'`
+returns 301 with an extensionless Location retaining `?source=email`, the destination loads,
+and `.plain.html` requests do not redirect. Extend the domain condition when the production
+hostname is ready. Legacy `/content/inside/en/…` prefixes and renamed pages need separate
+rules or explicit mappings; the suffix rule alone does not resolve those addresses.
 
 `/redirects` (DA sheet, columns Source, Destination, Note; Edge Delivery reads the first two).
 Built by `.migration/scripts/build_redirects.py` from the crawl and the news feed:
