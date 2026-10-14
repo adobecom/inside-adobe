@@ -44,6 +44,22 @@ Useful options:
 
 A first test run: `node tools/importer/crawl/crawl.mjs --max 50`.
 
+## Other editions
+
+18 topics (health insurance, time off, payroll, check-in…) send each person to their edition's
+page. `editions.mjs` switches through the header's edition picker in the same signed-in browser,
+records where each topic lands, and switches you back to your own edition at the end:
+
+```sh
+node tools/importer/crawl/editions.mjs --probe   # two editions: check that switching works
+node tools/importer/crawl/editions.mjs           # every edition
+node tools/importer/crawl/crawl.mjs --urls inside-mirror/_editions/urls.txt --with-docs
+```
+
+Results go in `inside-mirror/_editions/` (`probe.json` / `editions.json`, `urls.txt`). They hold
+edition names, page addresses and the names (not values) of cookies or storage keys that change.
+If the run stops early, switch your edition back in the intranet's header.
+
 ## Sharing the result
 
 Share **only the `inside-mirror` folder**, by pushing it to the private mirror repository (never to
