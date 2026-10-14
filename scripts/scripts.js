@@ -9,17 +9,11 @@ if (window.trustedTypes?.createPolicy) {
   });
 }
 
-const hostnames = ['authorkit.dev'];
+// The site's own hosts: links to them become relative. Not inside.corp.adobe.com (the intranet).
+const hostnames = ['inside.adobe.com', 'inside-adobe--adobecom.aem.page', 'inside-adobe--adobecom.aem.live'];
 
-const locales = {
-  '': { lang: 'en' },
-  '/de': { lang: 'de' },
-  '/es': { lang: 'es' },
-  '/fr': { lang: 'fr' },
-  '/hi': { lang: 'hi' },
-  '/ja': { lang: 'ja' },
-  '/zh': { lang: 'zh' },
-};
+// US edition only for now
+const locales = { '': { lang: 'en' } };
 
 const linkBlocks = [
   { fragment: '/fragments/' },
