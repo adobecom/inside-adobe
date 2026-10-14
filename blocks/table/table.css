@@ -1,4 +1,7 @@
 .table {
+  /* wide tables scroll inside the block instead of widening the page */
+  overflow-x: auto;
+
   table {
     width: 100%;
     border-collapse: collapse;

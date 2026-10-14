@@ -295,6 +295,7 @@ main > .section {
 main {
   font-size: var(--body-font-size-m);
   line-height: 1.5;
+  overflow-wrap: break-word;
 
   @media (width >= 900px) {
     font-size: var(--body-font-size-xl);
