@@ -60,10 +60,9 @@ repository.
 | Linked documents left | 54 links still point to `inside.corp.adobe.com`. **Decision needed** for 28: 22 Word/Excel/PowerPoint files and 6 PDFs over 20 MB, which Edge Delivery can't serve (aem.live/docs/limits). Also 12 images linked as downloads (not crawled), 11 already 404 on the intranet, 3 never fetched. |
 | Re-importing | Authors now edit in DA. Never bulk re-upload imported content: re-import only to fix a converter bug, and replace a document only after checking it is unchanged since our last upload (`.migration/scripts/da_safe_overwrite.py` compares DA with the previous upload). |
 | Re-save incident (2026-10-14) | Between 04:25 and 04:59 UTC an unidentified tool re-saved every DA document, pointing images at page-folder copies it never created (images broke in preview), rewriting `#` links to `/`, dropping `?` queries and trimming hyphens. All 1,110 documents were restored from the import and verified byte for byte before the bulk preview; the re-saved versions are backed up locally. The tool is still unidentified: don't run bulk tools that rewrite media or links on this content. |
-| Redirects | Sheet `/redirects` (95 rows, §4.6), published and active. CDN suffix removal for `preview.inside.adobe.com` is configured in `config/cdn.yaml` but needs a Cloud Manager deployment. Legacy `/content/inside/en/…` paths are not covered. |
+| Redirects | Sheet `/redirects` (1,959 rows, §4.6), published and active: intranet redirects, renamed pages, moved PDFs. The two CDN rules in `config/cdn.yaml` (`.html` suffix, `/content/inside/en` prefix) need a **Cloud Manager deployment** to take effect. |
 | Other editions | Only the US edition was crawled (24 US-specific pages, e.g. `…/health-insurance/us`). Other countries deferred. |
-| Production hostname, locales | `scripts/scripts.js` still has the template's `hostnames = ['authorkit.dev']` and template locale list. |
-| Block library | New blocks aren't registered in the DA block library. |
+| Block library | Example documents for 13 blocks and `/library/blocks.json` are in DA. **An `adobecom` org admin** must register them (config changes are admin-only): in the site config (`https://da.live/config#/adobecom/inside-adobe/`) add a `library` sheet with columns `title`, `path` and one row: `Blocks`, `https://content.da.live/adobecom/inside-adobe/library/blocks.json`. |
 | Leftovers in DA | Unlinked test uploads: 3 Office files and the 57 MB PDF (under `/dam/…`); early header/footer copies under `/content/fragments/nav`. Safe to delete. |
 | Live tools (by decision) | Café menus/hours, news listing, events calendar, holiday list, calendar filters, awards feed and the event submission form are replaced by a note linking to the intranet page. Stock quote and My Favorites (homepage) dropped. |
 | Left out | Left-column "Need help?" box under some section menus; profile/search/tools rail; 5 section captions on 3 pages; 3 news images broken on the intranet itself (employee-communications: Premier League key visual, Creative residents, Women's FA Cup final). |
@@ -179,6 +178,7 @@ Read `AGENTS.md`. The repo is buildless, Baseline Newly available, min-width bre
 | Styles | `styles/styles.css` | Blue pill primary button; H3 in text 16px below 900px |
 | Article locations (PR #4) | `blocks/article-meta` | Optional third row: office locations, shown under the tags |
 | Image pop-up tiles (PR #6) | `blocks/image-modal`, `test/blocks/image-modal.test.js` | Tiles open a native modal `<dialog>` (Escape, × or a click outside closes it, focus returns to the tile); the overlay starts below the fixed header so the panel sits 140px from the top, as on the intranet |
+| Site settings | `scripts/scripts.js` | `hostnames`: `inside.adobe.com` (covers `preview.inside.adobe.com`) and the aem.page/aem.live hosts, so links to the site itself become relative; the intranet stays absolute. `locales`: US English only |
 
 ### 3.3 Import tooling (`tools/importer/`)
 
@@ -243,7 +243,11 @@ Things to know:
 - **Layout:** measured against the source at 1440/768/375px for each template (menu 285px, content
   927px at 1440, cards and chips to the pixel or within the container difference).
 - **Rendering:** no error boxes, no horizontal overflow, no unknown blocks across all output.
-- **Code:** eslint/stylelint clean; 139 tests pass (the flaky `dapreview` aside).
+- **Site sweep (2026-10-14):** all 970 pages rendered with the current code at 1440 and 390px
+  (`.migration/scripts/sweep.cjs`): no blocks failing to load, no missing block code, no script
+  errors. 32 pages scrolled sideways on phones (wide tables, long URLs, tiles in narrow sections),
+  fixed in CSS. 13 pages carry empty, invisible links copied from the intranet (harmless).
+- **Code:** eslint/stylelint clean; 142 tests pass (`dapreview` and one header test are flaky under load).
 - **Preview:** the stored version of every page and fragment was checked for failed images:
   1,107 of 1,110 clean; the 3 others are the news images broken on the intranet itself (§1).
 
@@ -328,8 +332,13 @@ After deployment, check that
 `curl -I 'https://preview.inside.adobe.com/benefits-wellbeing/health-insurance/us.html?source=email'`
 returns 301 with an extensionless Location retaining `?source=email`, the destination loads,
 and `.plain.html` requests do not redirect. Extend the domain condition when the production
-hostname is ready. Legacy `/content/inside/en/…` prefixes and renamed pages need separate
-rules or explicit mappings; the suffix rule alone does not resolve those addresses.
+hostname is ready.
+
+A second rule, `remove-legacy-prefix`, runs first: `/content/inside/en/<path>.html` (and
+`/content/inside/en`, `/content/inside/en.html`) → `/<path>`. Renamed pages and moved documents
+then resolve through the `/redirects` sheet. After deployment, check that
+`curl -I 'https://preview.inside.adobe.com/content/inside/en/benefits-wellbeing/health-insurance/us.html'`
+returns 301 to `/benefits-wellbeing/health-insurance/us`.
 
 `/redirects` (DA sheet, columns Source, Destination, Note; Edge Delivery reads the first two).
 Built by `.migration/scripts/build_redirects.py` from the crawl and the news feed:
@@ -340,8 +349,12 @@ Built by `.migration/scripts/build_redirects.py` from the crawl and the news fee
 | 25 | Intranet pages and news items that redirected to another site (blog.adobe.com, max.adobe.com, Navan…) |
 | 5 | News items that opened a PDF; the PDFs weren't crawled, so they still point to the intranet |
 | 4 | `/home` → `/`, and three links already broken on the intranet with a clear new page (Founders Award, Tech Award, VIA) |
+| 316 | Renamed pages: the intranet name (lowercased, e.g. `/collaboration/email---calendaring`) → the clean name |
+| 1,548 | The 1,052 moved PDFs: old `/content/dam/…` address → `/dam/…`, as typed (lowercased), percent-encoded, and cleaned |
 
-Redirects win over pages at the same path; none of the sources is a migrated page. Preview and
+Edge Delivery lowercases and cleans a request path before the redirect lookup (`/Home` finds
+`/home`), so sources are lowercase. Redirects win over pages at the same path; none of the
+sources is a migrated page. Preview and
 publish `/redirects` like a page. Still dead (not redirected): office "activities" pages that
 never existed (Ottawa, Denver, Los Angeles), `/adobe-life/communities…`, intranet search, a few
 malformed source links and calendar files for events that weren't crawled.
