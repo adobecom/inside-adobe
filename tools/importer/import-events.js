@@ -19,6 +19,19 @@ const TZ = {
   ET: 'America/New_York', EST: 'America/New_York', EDT: 'America/New_York',
   GMT: 'Europe/London', BST: 'Europe/London', CET: 'Europe/Paris', CEST: 'Europe/Paris',
   IST: 'Asia/Kolkata', JST: 'Asia/Tokyo', SGT: 'Asia/Singapore', AEDT: 'Australia/Sydney', AEST: 'Australia/Sydney',
+  AET: 'Australia/Sydney', KST: 'Asia/Seoul', HKT: 'Asia/Hong_Kong', EET: 'Europe/Bucharest', EEST: 'Europe/Bucharest',
+};
+// no zone on the date line: an in-person event tagged with one office is in that office's time
+const REGION_TZ = {
+  Austin: 'America/Chicago', Chicago: 'America/Chicago', Denver: 'America/Denver', Lehi: 'America/Denver',
+  'Los Angeles': 'America/Los_Angeles', 'San Francisco': 'America/Los_Angeles', 'San Jose': 'America/Los_Angeles',
+  Seattle: 'America/Los_Angeles', 'New York': 'America/New_York', 'McLean (DC)': 'America/New_York',
+  Waltham: 'America/New_York', Ottawa: 'America/Toronto', London: 'Europe/London', Reading: 'Europe/London',
+  Edinburgh: 'Europe/London', Dublin: 'Europe/Dublin', Paris: 'Europe/Paris', Hamburg: 'Europe/Berlin',
+  Munich: 'Europe/Berlin', Basel: 'Europe/Zurich', Bucharest: 'Europe/Bucharest', Yerevan: 'Asia/Yerevan',
+  Bangalore: 'Asia/Kolkata', Noida: 'Asia/Kolkata', Singapore: 'Asia/Singapore', 'Hong Kong': 'Asia/Hong_Kong',
+  China: 'Asia/Shanghai', Seoul: 'Asia/Seoul', Tokyo: 'Asia/Tokyo', Sydney: 'Australia/Sydney',
+  Melbourne: 'Australia/Melbourne',
 };
 const pad = (n) => String(n).padStart(2, '0');
 
@@ -27,7 +40,7 @@ export function parseWhen(text) {
     .map(([, m, d, y]) => `${y}-${pad(MONTHS[m.toLowerCase()])}-${pad(d)}`);
   if (!dates.length) return {};
   const t = (text.split('|')[1] || '')
-    .match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*[-–]\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)\s*([A-Z]{2,4})?/i);
+    .match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*[-–]\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)\s*\(?([A-Z]{2,4})?/i);
   if (!t) return { start: dates[0], end: dates[dates.length - 1] };
   const [, sh, sm, sap, eh, em, eap, zone] = t;
   const hour = (h, ap) => (Number(h) % 12) + (ap.toLowerCase() === 'pm' ? 12 : 0);
@@ -91,7 +104,7 @@ export default {
       Title: document.title,
       Template: 'event',
       ...(when.start && { 'Event Start': when.start, 'Event End': when.end }),
-      ...(when.tz && { 'Event Time Zone': when.tz }),
+      ...(when.start?.includes('T') && (when.tz || REGION_TZ[region]) && { 'Event Time Zone': when.tz || REGION_TZ[region] }),
       ...(type && { 'Event Type': type }),
       ...(region && { 'Event Region': region }),
     }));

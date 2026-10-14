@@ -15,7 +15,7 @@ repository.
 | **Repository** | https://github.com/adobecom/inside-adobe (public) |
 | **Code** | PR #1 (Mission & Plan, header, footer) and PR #3 (templates, blocks, Side-Nav/Event/Full-Width imports) merged; PR #2 closed. News import and cleanup fixes: branch `migrate/news-articles`. |
 | **Source copy** | Private repo `adobecom/inside-adobe-mirror`: a signed-in crawl of the intranet (US edition) |
-| **Pages migrated** | **877 of ~1,080** intranet pages, in DA (all news included) |
+| **Pages migrated** | **970 of ~1,080** intranet pages, in DA (all news and events included) |
 | **Published** | Nothing. 5 pages + header/footer were previewed early on; everything since is **upload only** |
 
 ---
@@ -38,7 +38,7 @@ repository.
 | Template (source) | Pages | Status |
 |---|---|---|
 | Side-Nav Page | 360 | In DA. Includes Mission & Plan, Adobe Research, Employee Survey (replaced with the Side-Nav versions on 2026-10-13; earlier versions backed up locally) |
-| Event | 149 | In DA |
+| Event | 242 | In DA: 149 from the first crawl, 93 more found by the re-crawl (mostly linked from news) |
 | Full-Width Page | 86 | In DA (44 section landing pages, 42 office pages) |
 | Homepage | 1 | In DA, previewed |
 | News Article | 281 | In DA, full archive from the news feed (the feed counts 285; 283 crawled, 281 unique). The Cybersecurity article was previewed early, before its re-import |
@@ -49,7 +49,7 @@ repository.
 
 | Item | Detail |
 |---|---|
-| New pages from the re-crawl | 153 pages found by the 2026-10-13 re-crawl (55 Side-Nav, 94 Events, 4 Full-Width) aren't imported yet; the existing scripts cover them. |
+| Re-crawl leftovers | The re-crawl's 153 "new" URLs were mostly second addresses of migrated pages; the 93 new events are in DA. Left out: `/benefits-wellbeing/emotional-wellbeing/romania` (Romania edition, US only by decision). |
 | Linked documents | ~1,060 PDFs/Office files on the intranet DAM, downloaded by the `--with-docs` crawl (largest 54 MB). Links still point to `inside.corp.adobe.com`; decision is to move them into DA and rewrite links. |
 | Redirects | 47 old → new redirects plus 43 alias URLs were recorded by the crawl; not yet in a redirects sheet. |
 | Other editions | Only the US edition was crawled (24 US-specific pages, e.g. `…/health-insurance/us`). Other countries deferred. |
@@ -82,7 +82,7 @@ Edit at `https://da.live/edit#/adobecom/inside-adobe/<path>`.
 |---|---|---|
 | `side-nav` | 360 section pages | Adds the section menu (left on desktop, a bar above the content on mobile); 1236px grid |
 | `full-width` | 86 landing/office pages | 1236px grid; `band` sections (gray strips) |
-| `event` | 149 event pages | More Events button top right; no section dividers |
+| `event` | 242 event pages | More Events button top right; no section dividers |
 | `article` | news | Narrower column, More News top right, normal-weight body links |
 | `home` | homepage | Content + right rail layout from 1200px |
 
@@ -95,7 +95,7 @@ Edit at `https://da.live/edit#/adobecom/inside-adobe/<path>`.
 | `Side Nav` | side-nav pages, only when not the default | Menu name or path; default is the first path segment |
 | `Publication Date` | articles | `YYYY-MM-DD`; drives the homepage news grid order |
 | `Event Start` / `Event End` | events | `YYYY-MM-DD` (all day) or `YYYY-MM-DDTHH:MM`; date chip, "Multi Day", Add to Calendar |
-| `Event Time Zone` | timed events | IANA zone, e.g. `America/Los_Angeles` (leave out → viewer's local time) |
+| `Event Time Zone` | timed events | IANA zone, e.g. `America/Los_Angeles` (leave out → viewer's local time). Imported from the date line, else from the event's single office region |
 | `Event Type`, `Event Region` | events | Repeat the block values for future listings |
 
 ### 2.4 Section styles (Section Metadata `style`)
@@ -171,7 +171,7 @@ Read `AGENTS.md`. The repo is buildless, Baseline Newly available, min-width bre
 | `crawl/crawl.mjs` | Mirrors the intranet from a signed-in machine (see its README) |
 | `import-side-nav.js` | Side-Nav pages; `?emit=menu` → section menu, `?emit=fragment&name=<n>` → shared fragment |
 | `import-full-width.js` | Full-Width pages (related cards, bands) |
-| `import-events.js` | Events; parses the date line into `Event Start/End/Time Zone` (all 149 parse) |
+| `import-events.js` | Events; parses the date line into `Event Start/End/Time Zone` (all 242 parse; zone from the date line or the event's office) |
 | `import-news.js` | News articles: article-meta (tags, date, locations), image pop-ups inline, `Publication Date` |
 | `import-home.js`, `import-cybersecurity-awareness-month-2026.js`, `import-adobe-*.js`, `import-employee-survey.js`, `import-nav.js`, `import-footer.js` | The first single pages, header, footer |
 | `lib/inside-adobe-components.js` | Shared conversion by component type (droptab → collapsible sections, accordions, tables, callouts, cta, quote, boxes, flex groups → columns-aside, live tools → note, shared fragments) |
@@ -211,7 +211,7 @@ Things to know:
   to 100%; Full-Width 84/86 ≥ 99% (event submission form is a tool note by decision); News
   281/281 ≥ 98.4%. After the 2026-10-14 cleanup fixes all templates were re-imported and re-checked:
   Events 143/149 ≥ 99%, Side-Nav 326/360, Full-Width 85/86; the only drops are office events lists
-  that are now tool notes.
+  that are now tool notes. The 93 re-crawl events: 92 at 100%, 1 at 97.9%.
 - **Layout:** measured against the source at 1440/768/375px for each template (menu 285px, content
   927px at 1440, cards and chips to the pixel or within the container difference).
 - **Rendering:** no error boxes, no horizontal overflow, no unknown blocks across all output.
