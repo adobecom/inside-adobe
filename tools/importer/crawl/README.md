@@ -51,11 +51,14 @@ page. `editions.mjs` switches through the header's edition picker in the same si
 records where each topic lands, and switches you back to your own edition at the end:
 
 ```sh
-node tools/importer/crawl/editions.mjs --topics  # no switching: save the 18 topic pages as delivered
-node tools/importer/crawl/editions.mjs --probe   # two editions: check that switching works
-node tools/importer/crawl/editions.mjs           # every edition
+node tools/importer/crawl/editions.mjs --topics  # no switching: topic pages, listings, urls.txt
 node tools/importer/crawl/crawl.mjs --urls inside-mirror/_editions/urls.txt --with-docs
 ```
+
+`--topics` reads each topic's child pages (country and manager versions) from AEM's page listing
+(`.1.json`) and writes them to `urls.txt`. Without `--topics` the script instead switches through
+the picker's editions (`--probe` tries two); that changes your profile's edition, so it's only a
+fallback.
 
 Results go in `inside-mirror/_editions/` (`probe.json` / `editions.json`, `urls.txt`). They hold
 edition names, page addresses and the names (not values) of cookies or storage keys that change.

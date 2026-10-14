@@ -7,7 +7,7 @@
  * crawl with crawl.mjs --urls). Stores edition names and page URLs only: no cookie or storage
  * values.
  */
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { createInterface } from 'node:readline/promises';
 import { parseArgs } from 'node:util';
@@ -76,7 +76,16 @@ if (opts.topics) {
     console.log(`${t}: ${Object.entries(report[t]).map(([k, v]) => `${k} ${v}`).join(', ')}`);
   }
   await writeFile(join(DIR, 'topics.json'), JSON.stringify(report, null, 1));
-  console.log(`Saved ${dir} and ${join(DIR, 'topics.json')}`);
+  // the child pages (country / role versions) from each topic's listing → crawl list
+  const urls = [];
+  for (const t of TOPICS) {
+    const file = join(dir, `${t.slice(1).replaceAll('/', '_')}.children.json`);
+    const listing = await readFile(file, 'utf8').then(JSON.parse).catch(() => ({}));
+    Object.entries(listing).filter(([, v]) => v?.['jcr:primaryType'] === 'cq:Page')
+      .forEach(([name]) => urls.push(`${SITE}${t}/${name}.html`));
+  }
+  await writeFile(join(DIR, 'urls.txt'), urls.join('\n'));
+  console.log(`Saved ${dir}, ${join(DIR, 'topics.json')} and ${urls.length} pages to crawl in ${join(DIR, 'urls.txt')}`);
   await context.close();
   process.exit(0);
 }
