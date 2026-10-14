@@ -8,6 +8,7 @@
  *   calltoaction   → cta                  pullquote → quote          thumbnail → card-resource (video)
  *   boxtextandimage→ columns-aside (beside text) or card-resource (alone / in a grid section)
  *   servicenow     → titled link list     live tools → a note linking to the intranet page
+ *   imagemodal     → image-modal (each row of pop-up tiles is one block)
  *   shared experience fragments (shared-fragments.json) → /fragments/shared/<name>
  */
 import accordionParser from '../parsers/accordion.js';
@@ -18,6 +19,7 @@ import quoteParser from '../parsers/quote.js';
 import cardResourceParser from '../parsers/card-resource.js';
 import cardResourceVideoParser from '../parsers/card-resource-video.js';
 import columnsAsideParser from '../parsers/columns-aside.js';
+import imageModalParser from '../parsers/image-modal.js';
 import cleanupTransformer from '../transformers/inside-adobe-cleanup.js';
 import SHARED from '../shared-fragments.json';
 
@@ -118,6 +120,18 @@ export function convert(root, document, pageUrl, dropIds = {}) {
       return [title, panel ? [...panel.querySelectorAll('.cmp-text')].flatMap((t) => [...t.children]) : []];
     });
     tc.replaceWith(WebImporter.Blocks.createBlock(document, { name: 'accordion', cells }));
+  });
+
+  // image pop-up tiles: each run of sibling tiles (a flex row) becomes one image-modal block.
+  // First, so the flex rules below don't treat the tiles as images.
+  root.querySelectorAll('.imagemodal').forEach((tile) => {
+    if (!tile.isConnected || tile.previousElementSibling?.matches('.imagemodal')) return;
+    const run = [tile];
+    while (run.at(-1).nextElementSibling?.matches('.imagemodal')) run.push(run.at(-1).nextElementSibling);
+    const flex = tile.closest(`.flex${COL}`);
+    const block = imageModalParser(run, { document });
+    // a flex group holding only tiles: the block replaces the whole group
+    if (flex && !flex.textContent.replace(block.textContent, '').trim()) flex.replaceWith(block);
   });
 
   // flex groups: text beside a box, video card or image → columns-aside; several boxes on
