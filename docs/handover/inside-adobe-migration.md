@@ -13,7 +13,7 @@ repository.
 |---|---|
 | **Organization / site** | `adobecom` / `inside-adobe` |
 | **Repository** | https://github.com/adobecom/inside-adobe (public) |
-| **Code** | All merged: PR #1 (Mission & Plan, header, footer), PR #3 (templates, blocks, Side-Nav/Event/Full-Width imports), PR #4 (news, documents, redirects, page names); PR #2 closed. CDN config (`config/cdn.yaml`) on `main`, not yet deployed. |
+| **Code** | All merged: PR #1 (Mission & Plan, header, footer), PR #3 (templates, blocks, Side-Nav/Event/Full-Width imports), PR #4 (news, documents, redirects, page names), PR #5 (handover), PR #6 (image pop-up tiles); PR #2 closed. CDN config (`config/cdn.yaml`) on `main`, not yet deployed. |
 | **Source copy** | Private repo `adobecom/inside-adobe-mirror`: a signed-in crawl of the intranet (US edition) |
 | **Pages migrated** | **970 of ~1,080** intranet pages, in DA (all news and events included) |
 | **Published** | **Everything**, behind sign-in (2026-10-14): 970 pages, 140 fragments, 1,052 PDFs, `/redirects`. Production hostname not connected yet |
@@ -44,7 +44,7 @@ repository.
 | Homepage | 1 | Published |
 | News Article | 281 | Published, full archive from the news feed (the feed counts 285; 283 crawled, 281 unique) |
 | Shared content | 84 section menus, 54 shared fragments, header, footer | Published |
-| Images | ~1,500 | In DA under `/dam/…` (intranet DAM paths, lowercased); served from the pages once previewed. One 26 MB PNG (Steven Bartlett article) replaced by a resized JPEG to fit the 20 MB limit |
+| Images | ~1,500 | In DA under `/dam/…` (intranet DAM paths, lowercased); served from the pages once previewed. One 26 MB PNG (Steven Bartlett article) replaced by a resized JPEG to fit the 20 MB limit; the Ovidiu Eftimie photo (Career Opportunities), missing from the crawl, saved by hand from the intranet |
 | Documents | 1,052 PDFs | Published under `/dam/…`; every page link to them rewritten (277 pages) |
 
 ### Also outstanding
@@ -60,7 +60,7 @@ repository.
 | Block library | New blocks aren't registered in the DA block library. |
 | Leftovers in DA | Unlinked test uploads: 3 Office files and the 57 MB PDF (under `/dam/…`); early header/footer copies under `/content/fragments/nav`. Safe to delete. |
 | Live tools (by decision) | Café menus/hours, news listing, events calendar, holiday list, calendar filters, awards feed and the event submission form are replaced by a note linking to the intranet page. Stock quote and My Favorites (homepage) dropped. |
-| Left out | Left-column "Need help?" box under some section menus; profile/search/tools rail; 5 section captions on 3 pages; 1 image missing from the crawl (`ovidiu-eftimie-286x343.png`); 3 news images broken on the intranet itself (employee-communications: Premier League key visual, Creative residents, Women's FA Cup final). |
+| Left out | Left-column "Need help?" box under some section menus; profile/search/tools rail; 5 section captions on 3 pages; 3 news images broken on the intranet itself (employee-communications: Premier League key visual, Creative residents, Women's FA Cup final). |
 | Engine bug (upstream) | `ak.js` `decorateButton` turns a bold/italic run that holds a link *plus other text* into a button and drops the text. Worked around in the importer; report it upstream. |
 | Flaky test | `dapreview > should load da.js module` fails intermittently under load (pre-existing). |
 
@@ -126,6 +126,7 @@ Edit at `https://da.live/edit#/adobecom/inside-adobe/<path>`.
 | `related-cards` | one row per card: image \| linked H3 + description | Photo tiles, 4/2/1 per row |
 | `event` | label \| value rows: Type, Region, Title (H1), When, Where, Link, Details | Chip and calendar file come from metadata (§2.3); keep **When** in step with `Event Start/End` |
 | `article-meta` | row 1: collection tag \| topic tags; row 2: date; optional row 3: list of office locations | Articles; locations show under the tags |
+| `image-modal` / `image-modal (center)` | one row per tile: image \| title, then caption \| pop-up content | Tiles (3 per row) that open a pop-up as on the intranet; image cell last = image on the right of the pop-up; `center` for short rows. 30 pages (Check-in, Tech Award, Founders Award…) |
 | `welcome`, `news-grid`, `events` | homepage | `news-grid` has no content: it reads `/news/query-index.json` |
 | `side-nav` | — | Added by the page script on side-nav pages; edit the menu fragment instead |
 
@@ -158,7 +159,7 @@ Read `AGENTS.md`. The repo is buildless, Baseline Newly available, min-width bre
 600/900/1200px. `scripts/ak.js` (the shared engine) was **not** modified; project hooks live in
 `scripts/scripts.js`.
 
-### 3.2 Site code added in PR #3 and #4
+### 3.2 Site code added in PR #3, #4 and #6
 
 | Area | Files | Summary |
 |---|---|---|
@@ -171,6 +172,7 @@ Read `AGENTS.md`. The repo is buildless, Baseline Newly available, min-width bre
 | Index | `helix-query.yaml` | `news` index → `/news/query-index.json` (title, subtitle, image, collection, date) |
 | Styles | `styles/styles.css` | Blue pill primary button; H3 in text 16px below 900px |
 | Article locations (PR #4) | `blocks/article-meta` | Optional third row: office locations, shown under the tags |
+| Image pop-up tiles (PR #6) | `blocks/image-modal`, `test/blocks/image-modal.test.js` | Tiles open a native modal `<dialog>` (Escape, × or a click outside closes it, focus returns to the tile); the overlay starts below the fixed header so the panel sits 140px from the top, as on the intranet |
 
 ### 3.3 Import tooling (`tools/importer/`)
 
@@ -182,7 +184,7 @@ Read `AGENTS.md`. The repo is buildless, Baseline Newly available, min-width bre
 | `import-events.js` | Events; parses the date line into `Event Start/End/Time Zone` (all 242 parse; zone from the date line or the event's office) |
 | `import-news.js` | News articles: article-meta (tags, date, locations), image pop-ups inline, `Publication Date` |
 | `import-home.js`, `import-cybersecurity-awareness-month-2026.js`, `import-adobe-*.js`, `import-employee-survey.js`, `import-nav.js`, `import-footer.js` | The first single pages, header, footer |
-| `lib/inside-adobe-components.js` | Shared conversion by component type (droptab → collapsible sections, accordions, tables, callouts, cta, quote, boxes, flex groups → columns-aside, live tools → note, shared fragments) |
+| `lib/inside-adobe-components.js` | Shared conversion by component type (droptab → collapsible sections, accordions, tables, callouts, cta, quote, boxes, flex groups → columns-aside, image pop-up tiles → image-modal, live tools → note, shared fragments) |
 | `parsers/*.js`, `transformers/inside-adobe-cleanup.js` | Per-block parsers; site-wide cleanup (chrome removal, heading promotion, jump links, Outlook tracking, emphasis/link fix, line breaks at emphasis edges) |
 | `shared-fragments.json` | Text fingerprint → name for the 54 shared experience fragments |
 
@@ -235,7 +237,7 @@ Things to know:
 - **Rendering:** no error boxes, no horizontal overflow, no unknown blocks across all output.
 - **Code:** eslint/stylelint clean; 139 tests pass (the flaky `dapreview` aside).
 - **Preview:** the stored version of every page and fragment was checked for failed images:
-  1,106 of 1,110 clean; the 4 others are the images already missing at the source (§1).
+  1,107 of 1,110 clean; the 3 others are the news images broken on the intranet itself (§1).
 
 ### 3.6 Local preview caveats
 
