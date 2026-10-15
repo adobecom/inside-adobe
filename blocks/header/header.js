@@ -1,6 +1,7 @@
 import { getConfig, getMetadata, ifLocalStorage } from '../../scripts/ak.js';
 import { loadFragment } from '../fragment/fragment.js';
 import { setColorScheme } from '../section-metadata/section-metadata.js';
+import { getEdition } from '../../scripts/utils/edition.js';
 
 const { locale } = getConfig();
 
@@ -290,6 +291,29 @@ function decorateBrandSection(section) {
   brandLink.append(span);
 }
 
+// The edition link (/tools/widgets/edition) shows the reader's edition and opens the picker
+const EDITION_PATH = '/tools/widgets/edition';
+
+function decorateEdition(header) {
+  const link = header.querySelector(`[href*="${EDITION_PATH}"]`);
+  if (!link) return;
+  const text = [...link.childNodes]
+    .find((n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim());
+  const name = document.createElement('span');
+  name.className = 'edition-name';
+  name.textContent = getEdition().name;
+  if (text) text.replaceWith(' ', name);
+  else link.append(name);
+  link.href = '/adobe-offices/office-directory';
+  link.setAttribute('role', 'button');
+  link.setAttribute('aria-haspopup', 'dialog');
+  link.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const { default: openPicker } = await import('./edition-picker.js');
+    openPicker(link, name);
+  });
+}
+
 export function decorateNavSection(section) {
   section.classList.add('main-nav-section');
   const navContent = section.querySelector('.default-content');
@@ -319,6 +343,7 @@ export function decorateHeaderContent(header) {
   decorateSkipLink(header);
   const sections = header.querySelectorAll(':scope > .section, :scope > .header-content > .section');
   if (sections[0]) decorateBrandSection(sections[0]);
+  decorateEdition(header);
   if (sections[1]) decorateNavSection(sections[1]);
   if (sections[2]) decorateActionSection(sections[2]);
 
