@@ -13,10 +13,10 @@ repository.
 |---|---|
 | **Organization / site** | `adobecom` / `inside-adobe` |
 | **Repository** | https://github.com/adobecom/inside-adobe (public) |
-| **Code** | All merged: PR #1 (Mission & Plan, header, footer), PR #3 (templates, blocks, Side-Nav/Event/Full-Width imports), PR #4 (news, documents, redirects, page names), PR #5 (handover), PR #6 (image pop-up tiles), PR #9 (launch prep), PR #10 (editions), PR #11 (editions crawler), PR #12 and #13 (homepage news and events by edition), PR #14 (handover), PR #15 (submit boxes on news and event pages), PR #16 (stock block), PR #17 (news listing), PR #18 (favicon); PR #2 closed. CDN config (`config/cdn.yaml`) on `main`, deployed 2026-10-15. |
+| **Code** | All merged: PR #1 (Mission & Plan, header, footer), PR #3 (templates, blocks, Side-Nav/Event/Full-Width imports), PR #4 (news, documents, redirects, page names), PR #5 (handover), PR #6 (image pop-up tiles), PR #9 (launch prep), PR #10 (editions), PR #11 (editions crawler), PR #12 and #13 (homepage news and events by edition), PR #14 (handover), PR #15 (submit boxes on news and event pages), PR #16 (stock block), PR #17 (news listing), PR #18 (favicon), PR #19 (handover), PR #20 (events calendar); PR #2 closed. CDN config (`config/cdn.yaml`) on `main`, deployed 2026-10-15. |
 | **Source copy** | Private repo `adobecom/inside-adobe-mirror`: a signed-in crawl of the intranet, plus every country and manager version of the 19 edition topics |
 | **Pages migrated** | **1,437 intranet pages**: everything crawled, all editions (459 country and manager versions), plus 19 topic pages |
-| **Published** | **Everything**, behind sign-in (2026-10-14/15): 1,456 pages, 142 fragments, 1,357 PDFs, `/redirects`, `/editions`, `/news-filters`; news and events republished 2026-10-15 with `Geography`, news re-indexed with its tags. Since then: `/news` (the listing) and the homepage (stock box). `preview.inside.adobe.com` is in use from Adobe's network (it doesn't resolve from outside) |
+| **Published** | **Everything**, behind sign-in (2026-10-14/15): 1,557 pages, 143 fragments, 1,357 PDFs, `/redirects`, `/editions`, `/news-filters`, `/calendar-filters`; news and events republished 2026-10-15 with `Geography`, news re-indexed with its tags. Since then: `/news` (the listing), the homepage (stock box), `/calendar` and 101 events from the calendar feed; all events re-indexed with `timezone`. `preview.inside.adobe.com` is in use from Adobe's network (it doesn't resolve from outside) |
 | **Authoring** | Authors started editing in DA on 2026-10-14; DA is now the source of truth, not the import (§1) |
 
 ---
@@ -45,7 +45,7 @@ repository.
 | Template (source) | Pages | Status |
 |---|---|---|
 | Side-Nav Page | 360 | Published. Includes Mission & Plan, Adobe Research, Employee Survey (the Side-Nav versions since 2026-10-13) |
-| Event | 246 | Published: 149 from the first crawl, 93 found by the re-crawl, 4 linked from country pages |
+| Event | 347 | Published: 149 from the first crawl, 93 found by the re-crawl, 4 linked from country pages, and 101 only listed by the calendar's feed (`crawl.mjs --events-archive`, 2026-10-15; every upcoming event the feed listed, 140, is now migrated). Listed on `/calendar` |
 | Full-Width Page | 86 | Published (44 section landing pages, 42 office pages) |
 | Homepage | 1 | Published (last 2026-10-15, with the author's edit and the stock box); the news grid and events list follow the reader's edition (§2.7) |
 | News Article | 285 | Published, full archive from the news feed (281), plus 4 older articles linked from country pages. Listed on `/news` (`news-list` block) |
@@ -59,7 +59,7 @@ repository.
 
 | Item | Detail |
 |---|---|
-| Linked documents left | 54 links still point to `inside.corp.adobe.com`. **Decision needed** for 28: 22 Word/Excel/PowerPoint files and 6 PDFs over 20 MB, which Edge Delivery can't serve (aem.live/docs/limits). Also 12 images linked as downloads (not crawled), 11 already 404 on the intranet, 3 never fetched. |
+| Linked documents left | 54 links still point to `inside.corp.adobe.com`. **Decision needed** for 34: Word/Excel/PowerPoint files and PDFs over 20 MB (28 before, 6 more linked from the calendar-feed events), which Edge Delivery can't serve (aem.live/docs/limits). Also 12 images linked as downloads (not crawled), 11 already 404 on the intranet, 3 never fetched. |
 | Re-importing | Authors now edit in DA. Never bulk re-upload imported content: re-import only to fix a converter bug, and replace a document only after checking it is unchanged since our last upload (`.migration/scripts/da_safe_overwrite.py` compares DA with the previous upload). |
 | Re-save incident (2026-10-14) | Between 04:25 and 04:59 UTC an unidentified tool re-saved every DA document, pointing images at page-folder copies it never created (images broke in preview), rewriting `#` links to `/`, dropping `?` queries and trimming hyphens. All 1,110 documents were restored from the import and verified byte for byte before the bulk preview; the re-saved versions are backed up locally. The tool is still unidentified: don't run bulk tools that rewrite media or links on this content. |
 | Redirects | Sheet `/redirects` (2,250 rows, §4.6), published and active: intranet redirects, renamed pages, moved PDFs. The two CDN rules in `config/cdn.yaml` (`.html` suffix, `/content/inside/en` prefix) were deployed through the Cloud Manager config pipeline on 2026-10-15; check them with the `curl -I` commands in §4.6. |
@@ -70,7 +70,6 @@ repository.
 | Left out | Left-column "Need help?" box under some section menus; profile/search/tools rail; 5 section captions on 3 pages; 3 news images broken on the intranet itself (employee-communications: Premier League key visual, Creative residents, Women's FA Cup final). |
 | Engine bug (upstream) | `ak.js` `decorateButton` turns a bold/italic run that holds a link *plus other text* into a button and drops the text. Worked around in the importer; report it upstream. |
 | Flaky tests | `dapreview > should load da.js module` and one header test (language trigger) fail intermittently under load (pre-existing). |
-| Events not yet migrated | The intranet calendar listed 114 upcoming events for the US edition on 2026-10-12; the crawl had reached 54 upcoming events in total, because most are only listed by the calendar's feed. `crawl.mjs --events-archive` pages through that feed (run signed in); then import and upload the new events with `import-events` and re-index. |
 | Computers listing | Optional: `editions.mjs --topics` with the current script also lists `/computers-devices/computers` (25 versions came from links already); then rebuild the topic page with `build_editions.py`. |
 
 ---
@@ -336,8 +335,8 @@ each page from `head.html` and the imported `.plain.html` for the checks.
 
 | Paths | Preview | Live |
 |---|---|---|
-| 1,456 pages (incl. 459 edition versions, 19 topic pages), 142 fragments | 200 | 200 |
-| 1,357 PDFs under `/dam/…`, `/redirects.json`, `/editions.json`, `/news-filters.json` | 200 | 200 |
+| 1,557 pages (incl. 459 edition versions, 19 topic pages, 347 events), 143 fragments | 200 | 200 |
+| 1,357 PDFs under `/dam/…`, `/redirects.json`, `/editions.json`, `/news-filters.json`, `/calendar-filters.json` | 200 | 200 |
 | `/news/query-index.json`, `/events/query-index.json` | 200 | 200 (filled by publishing the articles and events; both carry `geography`, news also `tags`) |
 | Office files and PDFs over 20 MB (§1) | not previewable | — |
 | `/about-adobe/adobe-mission-and-plan`, `/about-adobe` | author edits in DA not previewed | older version |
