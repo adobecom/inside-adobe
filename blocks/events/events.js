@@ -4,6 +4,8 @@ import { getEdition, inEdition } from '../../scripts/utils/edition.js';
 // fallback when the index can't be loaded. Updates when the edition changes.
 const INDEX = '/events/query-index.json';
 const LIMIT = 3;
+// all-day observances would crowd out sessions; the intranet's homepage list leaves them out
+const SKIP_TYPE = 'Cultural Moments & Observances';
 
 function span(className, text) {
   const el = document.createElement('span');
@@ -39,13 +41,15 @@ function fromRow(row) {
   };
 }
 
-// upcoming (or still running) events for the edition, soonest first
+// events starting today or later for the edition, soonest first (as on the intranet: an
+// observance that started last month isn't listed)
 function upcoming(rows, edition) {
   const today = new Date().toLocaleDateString('en-CA');
   const tags = (row) => (row.geography || '').split(',').map((t) => t.trim()).filter(Boolean);
   return rows
-    .filter((row) => row.start && (row.end || row.start).slice(0, 10) >= today)
+    .filter((row) => row.start && row.start.slice(0, 10) >= today)
     .filter((row) => inEdition(tags(row), edition))
+    .filter((row) => !(row.type || '').includes(SKIP_TYPE))
     .sort((a, b) => a.start.localeCompare(b.start))
     .slice(0, LIMIT)
     .map((row) => {

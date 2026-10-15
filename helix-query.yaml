@@ -86,6 +86,10 @@ indices:
         select: head > meta[name="event-end"]
         value: |
           attribute(el, "content")
+      type:
+        select: head > meta[name="event-type"]
+        value: |
+          attribute(el, "content")
       region:
         select: head > meta[name="event-region"]
         value: |

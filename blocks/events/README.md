@@ -1,8 +1,9 @@
 # events
 
 Upcoming events list with a heading and a **More Events** button: the next three events for the
-reader's edition (the header's edition picker; United States by default), soonest first. Events
-still running count as upcoming. Changing the edition updates the list in place.
+reader's edition (the header's edition picker; United States by default), soonest first: events
+starting today or later, as on the intranet. Like the intranet's homepage it leaves out
+"Cultural Moments & Observances" events (mostly all-day). Changing the edition updates the list in place.
 
 ## Authoring (Document Authoring)
 
@@ -13,7 +14,7 @@ Model: `standalone`
   page. They're only shown when the events index can't be loaded.
 
 The list comes from `/events/query-index.json` (the `events` index in `helix-query.yaml`): each
-event page's `Event Start`, `Event End`, `Event Region` (shown as the location) and `Geography`
+event page's `Event Start`, `Event End`, `Event Type`, `Event Region` (shown as the location) and `Geography`
 metadata. An event is for the edition when one of its `Geography` tags is the edition's geography
 or contains it; `global`, or no `Geography`, is for everyone.
 

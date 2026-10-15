@@ -170,7 +170,7 @@ with the geographies it serves. It opens the reader's version.
 - In the header fragment the picker is the link `/tools/widgets/edition`.
 - **Homepage news and events** follow the edition too: only articles and events whose `Geography`
   is the reader's edition or contains it (`global` is for everyone). The events list shows the next
-  three upcoming events from the `events` index. Changing the edition updates both in place.
+  three upcoming events from the `events` index, leaving out observances as the intranet did. Changing the edition updates both in place.
 
 ### 2.8 Preview and publish
 
@@ -198,7 +198,7 @@ Read `AGENTS.md`. The repo is buildless, Baseline Newly available, min-width bre
 | Fragment fix | `blocks/fragment/fragment.js` | A multi-section fragment that fills a whole section is inserted as page sections (it was a bare `main > div`, hidden by the base styles); test in `test/blocks/fragment.test.js` |
 | New blocks | `accordion`, `article-meta`, `callout`, `columns-aside`, `cta`, `event`, `events`, `news-grid`, `quote`, `related-cards`, `welcome` | See §2.5; tests for `event`, `related-cards`, `fragment` |
 | Changed blocks | `card-resource` (order, linked image, video), `table` (rows → table), `callout` (alert) | |
-| Index | `helix-query.yaml` | `news` index → `/news/query-index.json` (title, subtitle, image, collection, date, geography); `events` index → `/events/query-index.json` (title, start, end, region, geography) |
+| Index | `helix-query.yaml` | `news` index → `/news/query-index.json` (title, subtitle, image, collection, date, geography); `events` index → `/events/query-index.json` (title, start, end, type, region, geography) |
 | Styles | `styles/styles.css` | Blue pill primary button; H3 in text 16px below 900px |
 | Article locations (PR #4) | `blocks/article-meta` | Optional third row: office locations, shown under the tags |
 | Editions (PR #10) | `blocks/header/edition-picker.{js,css}`, `blocks/edition-pages`, `scripts/utils/edition.js`, `test/scripts/edition.test.js` | Picker loaded on first click from the header's edition link; `pickVersion()` matches an edition's geography to a version's tags (longest prefix) or the manager setting; tests cover matching and storage |

@@ -7,8 +7,8 @@ const day = (offset) => {
   d.setDate(d.getDate() + offset);
   return d.toLocaleDateString('en-CA');
 };
-const event = (path, title, start, end, region, geography) => ({
-  path, title, start, end, region, geography,
+const event = (path, title, start, end, region, geography, type = 'Benefits & Wellbeing | virtual') => ({
+  path, title, start, end, region, geography, type,
 });
 const INDEX = {
   data: [
@@ -18,6 +18,7 @@ const INDEX = {
     event('/events/seattle', 'Seattle meetup', day(0), day(0), 'Seattle', 'global/americas/united-states/seattle'),
     event('/events/running', 'Week of learning', day(-1), day(4), '', ''),
     event('/events/later', 'Later', day(9), day(9), 'Global', 'global'),
+    event('/events/observance', 'Observance', day(1), day(1), 'Global', 'global', 'Cultural Moments & Observances'),
   ],
 };
 
@@ -41,10 +42,10 @@ describe('events', () => {
     window.fetch = async () => new Response(JSON.stringify(INDEX));
     const el = block();
     await init(el);
-    // United States by default: no past or Seattle-only events; a running event counts
-    expect(titles(el)).to.deep.equal(['Week of learning', 'US benefits fair', 'Global day']);
-    expect(el.querySelector('li a').getAttribute('href')).to.equal('/events/running');
-    expect(el.querySelectorAll('li a .events-info span')[0].textContent).to.equal('Global');
+    // United States by default: no past, already running, observance or Seattle-only events
+    expect(titles(el)).to.deep.equal(['US benefits fair', 'Global day', 'Later']);
+    expect(el.querySelector('li a').getAttribute('href')).to.equal('/events/us');
+    expect(el.querySelectorAll('li a .events-info span')[0].textContent).to.equal('United States');
     el.remove();
   });
 
@@ -53,9 +54,9 @@ describe('events', () => {
     const el = block();
     await init(el);
     setEdition({ name: 'Paris', geo: 'global/emea/france/paris', manager: false });
-    expect(titles(el)).to.deep.equal(['Week of learning', 'Global day', 'Later']);
+    expect(titles(el)).to.deep.equal(['Global day', 'Later']);
     setEdition({ name: 'Seattle', geo: 'global/americas/united-states/seattle', manager: false });
-    expect(titles(el)).to.deep.equal(['Week of learning', 'Seattle meetup', 'US benefits fair']);
+    expect(titles(el)).to.deep.equal(['Seattle meetup', 'US benefits fair', 'Global day']);
     el.remove();
   });
 
