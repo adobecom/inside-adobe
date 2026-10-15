@@ -98,6 +98,10 @@ indices:
         select: head > meta[name="event-region"]
         value: |
           attribute(el, "content")
+      timezone:
+        select: head > meta[name="event-time-zone"]
+        value: |
+          attribute(el, "content")
       geography:
         select: head > meta[name="geography"]
         value: |

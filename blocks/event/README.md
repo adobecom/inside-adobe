@@ -16,7 +16,7 @@ One row per field, label in the first cell (rows can be left out):
 | Title | the event name, as Heading 1 |
 | When | Monday, Oct 12, 2026 \| 12:00-12:30 pm PT \| 3:00-3:30 pm ET |
 | Where | Virtual Event |
-| Link | a link, e.g. [Join on Zoom](…) |
+| Link | a link, e.g. [Join on Zoom](…); a link whose text says Register (e.g. Register now) shows a **Register** button instead of Add to Calendar |
 | Details | the description |
 
 Page metadata drives the date chip and the calendar file, so keep it in step with **When**:
