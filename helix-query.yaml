@@ -69,6 +69,31 @@ indices:
         select: head > meta[name="geography"]
         value: |
           attribute(el, "content")
+  events:
+    include:
+      - /events/**
+    target: /events/query-index.json
+    properties:
+      title:
+        select: head > meta[property="og:title"]
+        value: |
+          attribute(el, "content")
+      start:
+        select: head > meta[name="event-start"]
+        value: |
+          attribute(el, "content")
+      end:
+        select: head > meta[name="event-end"]
+        value: |
+          attribute(el, "content")
+      region:
+        select: head > meta[name="event-region"]
+        value: |
+          attribute(el, "content")
+      geography:
+        select: head > meta[name="geography"]
+        value: |
+          attribute(el, "content")
   authors:
     include:
       - /author/**

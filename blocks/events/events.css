@@ -38,6 +38,11 @@
     margin: 10px 0;
   }
 
+  li.events-none {
+    height: auto;
+    color: var(--color-text);
+  }
+
   li a {
     display: flex;
     height: 100%;
