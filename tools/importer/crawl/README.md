@@ -41,8 +41,30 @@ Useful options:
 | `--with-docs` | off | Also download linked PDFs and Office files from the DAM (works on a finished crawl too: re-run with it to fetch just the documents) |
 | `--no-follow` | off | Only crawl the start URLs / list, don't follow links |
 | `--news-archive` | off | Page through the news listing's feed and crawl every article in it, including ones nothing links to; raw feed responses go in `_feeds/` |
+| `--retry-failed` | off | Crawl pages again that failed to load last time (network errors; 404s stay) |
 
 A first test run: `node tools/importer/crawl/crawl.mjs --max 50`.
+
+## Other editions
+
+19 topics send each person to their own version: 13 by country (health insurance, time off,
+payroll, computers…; up to 37 countries each) and 6 by role (check-in, promotions…; `default` and `manager`).
+`editions.mjs --topics` lists every version without changing anything in your profile:
+
+```sh
+node tools/importer/crawl/editions.mjs --topics  # no switching: topic pages, listings, urls.txt
+node tools/importer/crawl/crawl.mjs --urls inside-mirror/_editions/urls.txt --with-docs --retry-failed
+```
+
+`--topics` reads each topic's child pages (country and manager versions) from AEM's page listing
+(`.1.json`) and writes them to `urls.txt`. Without `--topics` the script instead switches through
+the picker's editions (`--probe` tries two); that changes your profile's edition, so it's only a
+fallback.
+
+Results go in `inside-mirror/_editions/` (`probe.json` / `editions.json`, `urls.txt`). They hold
+edition names, page addresses and the names (not values) of cookies or storage keys that change.
+Switching changes the edition saved in your intranet profile (no cookie is involved); if a run
+stops early, switch your edition back in the intranet's header.
 
 ## Sharing the result
 

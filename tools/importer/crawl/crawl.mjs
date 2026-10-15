@@ -26,6 +26,7 @@ const { values: opts } = parseArgs({
     'no-follow': { type: 'boolean', default: false },
     headless: { type: 'boolean', default: false },
     'news-archive': { type: 'boolean', default: false },
+    'retry-failed': { type: 'boolean', default: false },
   },
 });
 
@@ -79,6 +80,10 @@ Object.entries(state.assets).forEach(([k, v]) => { state.assets[k] = brief(v); }
 Object.values(state.pages).forEach((p) => { if (p.error) p.error = brief(p.error); });
 // re-normalize a queue saved by an earlier version of this script
 state.queue = [...new Set(state.queue.map((u) => pageUrl(u)))].filter((u) => u && !state.pages[u]);
+// --retry-failed: pages that failed to load (network errors, not 404s) are crawled again
+if (opts['retry-failed']) {
+  Object.entries(state.pages).filter(([, p]) => p.error).forEach(([u]) => delete state.pages[u]);
+}
 const seen = new Set([...Object.keys(state.pages).map((u) => pageUrl(u) || u), ...state.queue]);
 const enqueue = (u) => {
   if (!u || seen.has(u)) return;
