@@ -149,6 +149,7 @@ if (opts['events-archive']) {
   const found = new Set();
   const EVENT = /"(?:https?:\/\/[^"/]+)?(\/(?:content\/inside\/en\/)?events\/\d{4}\/[^"?#]+?)(?:\.html|\.ics)?"/g;
   let start = 0;
+  let total;
   for (;;) {
     const all = start ? '' : '.all_true';
     const feed = new URL(`/services/events.ro_.bu_${all}.st_${start}.li_50.cc_true.json`, opts.start[0]).href;
@@ -165,7 +166,8 @@ if (opts['events-archive']) {
     await save(join(OUT, '_feeds', `events-st_${start}.json`), text);
     const batch = new Set([...text.matchAll(EVENT)].map(([, p]) => `${p}.html`));
     batch.forEach((p) => found.add(p));
-    const total = Number(text.match(/"numberOfEvents"\s*:\s*(\d+)/)?.[1]);
+    // only the first page carries the total
+    total ??= Number(text.match(/"numberOfEvents"\s*:\s*(\d+)/)?.[1]);
     start += 50;
     console.log(`Events archive: ${found.size} events listed (feed total ${total || '?'})`);
     if (!batch.size || !(start < total)) break;
