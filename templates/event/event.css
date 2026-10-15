@@ -11,4 +11,41 @@
   > .section + .section::before {
     display: none;
   }
+
+  /* shared submit box (added by scripts.js): a column beside the event from 1200px, as on the
+     intranet; the fragment link is hidden until it loads */
+  > .section:last-child:has(.fragment),
+  > .section:last-child:has(> .block-content > .cta) {
+    display: none;
+  }
+
+  @media (width >= 1200px) {
+    --grid-container-width: min(100% - 40px, 1236px);
+
+    display: grid;
+    grid-template-columns: 285px 1fr;
+    column-gap: 24px;
+    align-items: start;
+    max-width: var(--grid-container-width);
+    margin-inline: auto;
+
+    > .section {
+      --grid-container-width: 100%;
+
+      grid-column: 2;
+    }
+
+    > .section:last-child:has(> .block-content > .cta) {
+      display: block;
+      grid-column: 1;
+      grid-row: 1 / span 99;
+      padding-top: 64px;
+
+      &::before {
+        display: block;
+        margin-bottom: 23px;
+        border-color: #d3d3d3;
+      }
+    }
+  }
 }
