@@ -144,12 +144,14 @@ if (opts['news-archive']) {
 }
 // The events calendar lists events through the same kind of feed (events add .cc_true); most
 // upcoming events aren't linked from any page. GET first, as for news; else the calendar's POST.
+// As in the calendar's own script, only the first request has all_true (it ignores st_).
 if (opts['events-archive']) {
   const found = new Set();
   const EVENT = /"(?:https?:\/\/[^"/]+)?(\/(?:content\/inside\/en\/)?events\/\d{4}\/[^"?#]+?)(?:\.html|\.ics)?"/g;
   let start = 0;
   for (;;) {
-    const feed = new URL(`/services/events.ro_.bu_.all_true.st_${start}.li_50.cc_true.json`, opts.start[0]).href;
+    const all = start ? '' : '.all_true';
+    const feed = new URL(`/services/events.ro_.bu_${all}.st_${start}.li_50.cc_true.json`, opts.start[0]).href;
     let resp = await context.request.get(feed, { timeout: 60000 }).catch(() => null);
     if (!resp?.ok()) {
       const data = { filtersArray: [], dateArray: [] };
@@ -162,11 +164,11 @@ if (opts['events-archive']) {
     const text = (await resp.text()).replaceAll('\\/', '/');
     await save(join(OUT, '_feeds', `events-st_${start}.json`), text);
     const batch = new Set([...text.matchAll(EVENT)].map(([, p]) => `${p}.html`));
-    const { size } = found;
     batch.forEach((p) => found.add(p));
-    if (found.size === size) break;
+    const total = Number(text.match(/"numberOfEvents"\s*:\s*(\d+)/)?.[1]);
     start += 50;
-    console.log(`Events archive: ${found.size} events listed`);
+    console.log(`Events archive: ${found.size} events listed (feed total ${total || '?'})`);
+    if (!batch.size || !(start < total)) break;
   }
   const before = state.queue.length;
   found.forEach((p) => enqueue(pageUrl(p, opts.start[0])));
