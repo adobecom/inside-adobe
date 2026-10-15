@@ -1,6 +1,6 @@
 ---
 title: Inside Adobe on Edge Delivery — Migration Handover
-date: 2026-10-14
+date: 2026-10-15
 ---
 
 # Inside Adobe on Edge Delivery — Migration Handover
@@ -13,10 +13,10 @@ repository.
 |---|---|
 | **Organization / site** | `adobecom` / `inside-adobe` |
 | **Repository** | https://github.com/adobecom/inside-adobe (public) |
-| **Code** | All merged: PR #1 (Mission & Plan, header, footer), PR #3 (templates, blocks, Side-Nav/Event/Full-Width imports), PR #4 (news, documents, redirects, page names), PR #5 (handover), PR #6 (image pop-up tiles); PR #2 closed. CDN config (`config/cdn.yaml`) on `main`, not yet deployed. |
-| **Source copy** | Private repo `adobecom/inside-adobe-mirror`: a signed-in crawl of the intranet (US edition) |
-| **Pages migrated** | **970 of ~1,080** intranet pages, in DA (all news and events included) |
-| **Published** | **Everything**, behind sign-in (2026-10-14): 970 pages, 140 fragments, 1,052 PDFs, `/redirects`. `preview.inside.adobe.com` is in use from Adobe's network (it doesn't resolve from outside) |
+| **Code** | All merged: PR #1 (Mission & Plan, header, footer), PR #3 (templates, blocks, Side-Nav/Event/Full-Width imports), PR #4 (news, documents, redirects, page names), PR #5 (handover), PR #6 (image pop-up tiles), PR #9 (launch prep), PR #10 (editions); PR #2 closed. CDN config (`config/cdn.yaml`) on `main`, not yet deployed. |
+| **Source copy** | Private repo `adobecom/inside-adobe-mirror`: a signed-in crawl of the intranet, plus every country and manager version of the 19 edition topics |
+| **Pages migrated** | **1,437 intranet pages**: everything crawled, all editions (459 country and manager versions), plus 19 topic pages |
+| **Published** | **Everything**, behind sign-in (2026-10-14/15): 1,456 pages, 140 fragments, 1,357 PDFs, `/redirects`, `/editions`. `preview.inside.adobe.com` is in use from Adobe's network (it doesn't resolve from outside) |
 | **Authoring** | Authors started editing in DA on 2026-10-14; DA is now the source of truth, not the import (§1) |
 
 ---
@@ -44,24 +44,25 @@ repository.
 | Template (source) | Pages | Status |
 |---|---|---|
 | Side-Nav Page | 360 | Published. Includes Mission & Plan, Adobe Research, Employee Survey (the Side-Nav versions since 2026-10-13) |
-| Event | 242 | Published: 149 from the first crawl, 93 more found by the re-crawl (mostly linked from news) |
+| Event | 246 | Published: 149 from the first crawl, 93 found by the re-crawl, 4 linked from country pages |
 | Full-Width Page | 86 | Published (44 section landing pages, 42 office pages) |
 | Homepage | 1 | Published |
-| News Article | 281 | Published, full archive from the news feed (the feed counts 285; 283 crawled, 281 unique) |
+| News Article | 285 | Published, full archive from the news feed (281), plus 4 older articles linked from country pages |
+| Edition versions | 459 | Published: every country version of 13 topics (up to 37 countries each) and the manager version of 6 role topics (§2.7) |
+| Edition topic pages | 19 | Published: the topic's own address picks the reader's version (§2.7) |
 | Shared content | 84 section menus, 54 shared fragments, header, footer | Published |
-| Images | ~1,500 | In DA under `/dam/…` (intranet DAM paths, lowercased); served from the pages once previewed. One 26 MB PNG (Steven Bartlett article) replaced by a resized JPEG to fit the 20 MB limit; the Ovidiu Eftimie photo (Career Opportunities), missing from the crawl, saved by hand from the intranet |
-| Documents | 1,052 PDFs | Published under `/dam/…`; every page link to them rewritten (277 pages) |
+| Images | ~1,530 | In DA under `/dam/…` (intranet DAM paths, lowercased); served from the pages once previewed. One 26 MB PNG (Steven Bartlett article) replaced by a resized JPEG to fit the 20 MB limit; the Ovidiu Eftimie photo (Career Opportunities), missing from the crawl, saved by hand from the intranet |
+| Documents | 1,357 PDFs | Published under `/dam/…`; every page link to them rewritten (305 added with the editions) |
 
 ### Also outstanding
 
 | Item | Detail |
 |---|---|
-| Re-crawl leftovers | The re-crawl's 153 "new" URLs were mostly second addresses of migrated pages; the 93 new events are in DA. Left out: `/benefits-wellbeing/emotional-wellbeing/romania` (Romania edition, US only by decision). |
 | Linked documents left | 54 links still point to `inside.corp.adobe.com`. **Decision needed** for 28: 22 Word/Excel/PowerPoint files and 6 PDFs over 20 MB, which Edge Delivery can't serve (aem.live/docs/limits). Also 12 images linked as downloads (not crawled), 11 already 404 on the intranet, 3 never fetched. |
 | Re-importing | Authors now edit in DA. Never bulk re-upload imported content: re-import only to fix a converter bug, and replace a document only after checking it is unchanged since our last upload (`.migration/scripts/da_safe_overwrite.py` compares DA with the previous upload). |
 | Re-save incident (2026-10-14) | Between 04:25 and 04:59 UTC an unidentified tool re-saved every DA document, pointing images at page-folder copies it never created (images broke in preview), rewriting `#` links to `/`, dropping `?` queries and trimming hyphens. All 1,110 documents were restored from the import and verified byte for byte before the bulk preview; the re-saved versions are backed up locally. The tool is still unidentified: don't run bulk tools that rewrite media or links on this content. |
-| Redirects | Sheet `/redirects` (1,959 rows, §4.6), published and active: intranet redirects, renamed pages, moved PDFs. The two CDN rules in `config/cdn.yaml` (`.html` suffix, `/content/inside/en` prefix) need a **Cloud Manager deployment** to take effect. |
-| Other editions | Only the US edition was crawled (24 US-specific pages, e.g. `…/health-insurance/us`). Other countries deferred. |
+| Redirects | Sheet `/redirects` (2,250 rows, §4.6), published and active: intranet redirects, renamed pages, moved PDFs. The two CDN rules in `config/cdn.yaml` (`.html` suffix, `/content/inside/en` prefix) need a **Cloud Manager deployment** to take effect. |
+| Editions: language | The intranet's picker says an edition may change the language; no other-language pages turned up (country versions are in English). Homepage news and events aren't filtered by edition yet. |
 | Block library | Example documents for 13 blocks and `/library/blocks.json` are in DA. **An `adobecom` org admin** must register them (config changes are admin-only): in the site config (`https://da.live/config#/adobecom/inside-adobe/`) add a `library` sheet with columns `title`, `path` and one row: `Blocks`, `https://content.da.live/adobecom/inside-adobe/library/blocks.json`. |
 | Leftovers in DA | Unlinked test uploads: 3 Office files and the 57 MB PDF (under `/dam/…`); early header/footer copies under `/content/fragments/nav`. Safe to delete. |
 | Live tools (by decision) | Café menus/hours, news listing, events calendar, holiday list, calendar filters, awards feed and the event submission form are replaced by a note linking to the intranet page. Stock quote and My Favorites (homepage) dropped. |
@@ -132,6 +133,7 @@ Edit at `https://da.live/edit#/adobecom/inside-adobe/<path>`.
 | `event` | label \| value rows: Type, Region, Title (H1), When, Where, Link, Details | Chip and calendar file come from metadata (§2.3); keep **When** in step with `Event Start/End` |
 | `article-meta` | row 1: collection tag \| topic tags; row 2: date; optional row 3: list of office locations | Articles; locations show under the tags |
 | `image-modal` / `image-modal (center)` | one row per tile: image \| title, then caption \| pop-up content | Tiles (3 per row) that open a pop-up as on the intranet; image cell last = image on the right of the pop-up; `center` for short rows. 30 pages (Check-in, Tech Award, Founders Award…) |
+| `edition-pages` | one row per version: link to the version \| geographies it serves (or `manager` / `employee`) | The page at an edition topic's address; opens the reader's version (§2.7) |
 | `welcome`, `news-grid`, `events` | homepage | `news-grid` has no content: it reads `/news/query-index.json` |
 | `side-nav` | — | Added by the page script on side-nav pages; edit the menu fragment instead |
 
@@ -148,7 +150,25 @@ bold when it contains a link plus other text (it becomes a button and loses the 
   legal links, then copyright, in that order). Their links point to the migrated pages (310 links;
   they pointed at the intranet until 2026-10-14). Menu headings link to `#`; keep it that way.
 
-### 2.7 Preview and publish
+### 2.7 Editions
+
+19 topics have one version per country (13) or per role (6). Each version is a normal page under
+the topic (`/benefits-wellbeing/health-insurance/france`, `/career-growth/check-in/manager`);
+the topic's own address is a small page with the `edition-pages` block listing its versions, each
+with the geographies it serves. It opens the reader's version.
+
+- **Edition picker** (header): the "United States" link opens "Change Your Edition" (81 offices and
+  remote locations, "I'm a people manager"). The choice is kept in the browser; United States is
+  the default. Picking a city (Paris) opens the country's version (France); the most specific
+  geography wins (`global/apac/korea/seoul` before `global/apac`).
+- **No match** (Norway, Serbia have editions but no versions): the topic page shows the list.
+  `?versions` on a topic address shows the list too (for checking).
+- **`/editions` sheet**: `locations` (Name, Group `office`/`remote`, Geography) feeds the picker;
+  `topics` (Topic, Kind) lists the 19 topics. Add a location or topic there; add a version as a row
+  in its topic page's `edition-pages` block (see the block's README).
+- In the header fragment the picker is the link `/tools/widgets/edition`.
+
+### 2.8 Preview and publish
 
 Everything was previewed and published on 2026-10-14 (fragments, then pages, then PDFs and
 `/redirects`). After editing, preview and publish from the DA editor or Sidekick as usual. For bulk
@@ -164,7 +184,7 @@ Read `AGENTS.md`. The repo is buildless, Baseline Newly available, min-width bre
 600/900/1200px. `scripts/ak.js` (the shared engine) was **not** modified; project hooks live in
 `scripts/scripts.js`.
 
-### 3.2 Site code added in PR #3, #4 and #6
+### 3.2 Site code added in PR #3, #4, #6, #9 and #10
 
 | Area | Files | Summary |
 |---|---|---|
@@ -177,6 +197,7 @@ Read `AGENTS.md`. The repo is buildless, Baseline Newly available, min-width bre
 | Index | `helix-query.yaml` | `news` index → `/news/query-index.json` (title, subtitle, image, collection, date) |
 | Styles | `styles/styles.css` | Blue pill primary button; H3 in text 16px below 900px |
 | Article locations (PR #4) | `blocks/article-meta` | Optional third row: office locations, shown under the tags |
+| Editions (PR #10) | `blocks/header/edition-picker.{js,css}`, `blocks/edition-pages`, `scripts/utils/edition.js`, `test/scripts/edition.test.js` | Picker loaded on first click from the header's edition link; `pickVersion()` matches an edition's geography to a version's tags (longest prefix) or the manager setting; tests cover matching and storage |
 | Image pop-up tiles (PR #6) | `blocks/image-modal`, `test/blocks/image-modal.test.js` | Tiles open a native modal `<dialog>` (Escape, × or a click outside closes it, focus returns to the tile); the overlay starts below the fixed header so the panel sits 140px from the top, as on the intranet |
 | Site settings | `scripts/scripts.js` | `hostnames`: `inside.adobe.com` (covers `preview.inside.adobe.com`) and the aem.page/aem.live hosts, so links to the site itself become relative; the intranet stays absolute. `locales`: US English only |
 
@@ -184,7 +205,8 @@ Read `AGENTS.md`. The repo is buildless, Baseline Newly available, min-width bre
 
 | File | Imports |
 |---|---|
-| `crawl/crawl.mjs` | Mirrors the intranet from a signed-in machine (see its README) |
+| `crawl/crawl.mjs` | Mirrors the intranet from a signed-in machine (see its README); `--retry-failed` crawls pages again that failed to load |
+| `crawl/editions.mjs` | `--topics`: saves the 19 edition topics' AEM listings (`.1.json`) and writes the crawl list of their versions; no profile change. Without `--topics` it switches the picker's editions (changes your profile's edition; fallback only) |
 | `import-side-nav.js` | Side-Nav pages; `?emit=menu` → section menu, `?emit=fragment&name=<n>` → shared fragment |
 | `import-full-width.js` | Full-Width pages (related cards, bands) |
 | `import-events.js` | Events; parses the date line into `Event Start/End/Time Zone` (all 242 parse; zone from the date line or the event's office) |
@@ -267,6 +289,9 @@ each page from `head.html` and the imported `.plain.html` for the checks.
 - Push only the `inside-mirror` folder to `adobecom/inside-adobe-mirror`; never `.crawl-profile`
   (it holds the signed-in session).
 - The mirror's history was replaced with a single fresh commit on 2026-10-13 (§1).
+- Editions: `editions.mjs --topics`, then `crawl.mjs --urls inside-mirror/_editions/urls.txt
+  --with-docs --retry-failed`. Edition data and topic pages are rebuilt from the crawl by
+  `.migration/scripts/build_editions.py` (versions, geography tags from each version's page).
 
 ---
 
@@ -284,8 +309,8 @@ each page from `head.html` and the imported `.plain.html` for the checks.
 
 | Paths | Preview | Live |
 |---|---|---|
-| 970 pages, 140 fragments (`/fragments/nav`, `/fragments/side-nav`, `/fragments/shared`) | 200 | 200 |
-| 1,052 PDFs under `/dam/…`, `/redirects.json` | 200 | 200 |
+| 1,456 pages (incl. 459 edition versions, 19 topic pages), 140 fragments | 200 | 200 |
+| 1,357 PDFs under `/dam/…`, `/redirects.json`, `/editions.json` | 200 | 200 |
 | `/news/query-index.json` | 200 | 200 (filled by publishing the articles) |
 | Office files and PDFs over 20 MB (§1) | not previewable | — |
 | `/about-adobe/adobe-mission-and-plan`, `/about-adobe` | author edits in DA not previewed | older version |
@@ -345,12 +370,15 @@ Built by `.migration/scripts/build_redirects.py` from the crawl and the news fee
 
 | Rows | What |
 |---|---|
-| 61 | Intranet redirects between pages (e.g. `/benefits-wellbeing/health-insurance` → `…/us`) |
+| 42 | Intranet redirects between pages (e.g. `/global-safety/crisis-outage` → `/global-safety/office-building-security`) |
 | 25 | Intranet pages and news items that redirected to another site (blog.adobe.com, max.adobe.com, Navan…) |
 | 5 | News items that opened a PDF; the PDFs weren't crawled, so they still point to the intranet |
 | 4 | `/home` → `/`, and three links already broken on the intranet with a clear new page (Founders Award, Tech Award, VIA) |
 | 316 | Renamed pages: the intranet name (lowercased, e.g. `/collaboration/email---calendaring`) → the clean name |
-| 1,548 | The 1,052 moved PDFs: old `/content/dam/…` address → `/dam/…`, as typed (lowercased), percent-encoded, and cleaned |
+| 1,858 | The 1,357 moved PDFs: old `/content/dam/…` address → `/dam/…`, as typed (lowercased), percent-encoded, and cleaned |
+
+The 19 edition topics are pages (§2.7), so the intranet's redirects from a topic to its US or
+employee version are not in the sheet.
 
 Edge Delivery lowercases and cleans a request path before the redirect lookup (`/Home` finds
 `/home`), so sources are lowercase. Redirects win over pages at the same path; none of the
