@@ -62,7 +62,7 @@ repository.
 | Re-importing | Authors now edit in DA. Never bulk re-upload imported content: re-import only to fix a converter bug, and replace a document only after checking it is unchanged since our last upload (`.migration/scripts/da_safe_overwrite.py` compares DA with the previous upload). |
 | Re-save incident (2026-10-14) | Between 04:25 and 04:59 UTC an unidentified tool re-saved every DA document, pointing images at page-folder copies it never created (images broke in preview), rewriting `#` links to `/`, dropping `?` queries and trimming hyphens. All 1,110 documents were restored from the import and verified byte for byte before the bulk preview; the re-saved versions are backed up locally. The tool is still unidentified: don't run bulk tools that rewrite media or links on this content. |
 | Redirects | Sheet `/redirects` (2,250 rows, §4.6), published and active: intranet redirects, renamed pages, moved PDFs. The two CDN rules in `config/cdn.yaml` (`.html` suffix, `/content/inside/en` prefix) need a **Cloud Manager deployment** to take effect. |
-| Editions: language | The intranet's picker says an edition may change the language; no other-language pages turned up (country versions are in English). Homepage news and events aren't filtered by edition yet. |
+| Editions: language | The intranet's picker says an edition may change the language; no other-language pages turned up (country versions are in English). Homepage news is filtered by edition (an article's `Geography`); the homepage events list is a static snapshot and isn't. |
 | Block library | Example documents for 13 blocks and `/library/blocks.json` are in DA. **An `adobecom` org admin** must register them (config changes are admin-only): in the site config (`https://da.live/config#/adobecom/inside-adobe/`) add a `library` sheet with columns `title`, `path` and one row: `Blocks`, `https://content.da.live/adobecom/inside-adobe/library/blocks.json`. |
 | Leftovers in DA | Unlinked test uploads: 3 Office files and the 57 MB PDF (under `/dam/…`); early header/footer copies under `/content/fragments/nav`. Safe to delete. |
 | Live tools (by decision) | Café menus/hours, news listing, events calendar, holiday list, calendar filters, awards feed and the event submission form are replaced by a note linking to the intranet page. Stock quote and My Favorites (homepage) dropped. |
@@ -105,6 +105,7 @@ Edit at `https://da.live/edit#/adobecom/inside-adobe/<path>`.
 | `Template` | all | See §2.2 |
 | `Side Nav` | side-nav pages, only when not the default | Menu name or path; default is the first path segment |
 | `Publication Date` | articles | `YYYY-MM-DD`; drives the homepage news grid order |
+| `Geography` | articles | Who it's for: the intranet's geography tags, comma-separated (`global`, `global/americas/united-states`, `…/seattle`); the homepage shows an article when one tag is the reader's edition or contains it |
 | `Event Start` / `Event End` | events | `YYYY-MM-DD` (all day) or `YYYY-MM-DDTHH:MM`; date chip, "Multi Day", Add to Calendar |
 | `Event Time Zone` | timed events | IANA zone, e.g. `America/Los_Angeles` (leave out → viewer's local time). Imported from the date line, else from the event's single office region |
 | `Event Type`, `Event Region` | events | Repeat the block values for future listings |
@@ -167,6 +168,8 @@ with the geographies it serves. It opens the reader's version.
   `topics` (Topic, Kind) lists the 19 topics. Add a location or topic there; add a version as a row
   in its topic page's `edition-pages` block (see the block's README).
 - In the header fragment the picker is the link `/tools/widgets/edition`.
+- **Homepage news** follows the edition too: only articles whose `Geography` is the reader's
+  edition or contains it (`global` is for everyone). Changing the edition updates the grid in place.
 
 ### 2.8 Preview and publish
 
@@ -194,7 +197,7 @@ Read `AGENTS.md`. The repo is buildless, Baseline Newly available, min-width bre
 | Fragment fix | `blocks/fragment/fragment.js` | A multi-section fragment that fills a whole section is inserted as page sections (it was a bare `main > div`, hidden by the base styles); test in `test/blocks/fragment.test.js` |
 | New blocks | `accordion`, `article-meta`, `callout`, `columns-aside`, `cta`, `event`, `events`, `news-grid`, `quote`, `related-cards`, `welcome` | See §2.5; tests for `event`, `related-cards`, `fragment` |
 | Changed blocks | `card-resource` (order, linked image, video), `table` (rows → table), `callout` (alert) | |
-| Index | `helix-query.yaml` | `news` index → `/news/query-index.json` (title, subtitle, image, collection, date) |
+| Index | `helix-query.yaml` | `news` index → `/news/query-index.json` (title, subtitle, image, collection, date, geography) |
 | Styles | `styles/styles.css` | Blue pill primary button; H3 in text 16px below 900px |
 | Article locations (PR #4) | `blocks/article-meta` | Optional third row: office locations, shown under the tags |
 | Editions (PR #10) | `blocks/header/edition-picker.{js,css}`, `blocks/edition-pages`, `scripts/utils/edition.js`, `test/scripts/edition.test.js` | Picker loaded on first click from the header's edition link; `pickVersion()` matches an edition's geography to a version's tags (longest prefix) or the manager setting; tests cover matching and storage |
@@ -210,7 +213,7 @@ Read `AGENTS.md`. The repo is buildless, Baseline Newly available, min-width bre
 | `import-side-nav.js` | Side-Nav pages; `?emit=menu` → section menu, `?emit=fragment&name=<n>` → shared fragment |
 | `import-full-width.js` | Full-Width pages (related cards, bands) |
 | `import-events.js` | Events; parses the date line into `Event Start/End/Time Zone` (all 242 parse; zone from the date line or the event's office) |
-| `import-news.js` | News articles: article-meta (tags, date, locations), image pop-ups inline, `Publication Date` |
+| `import-news.js` | News articles: article-meta (tags, date, locations), image pop-ups inline, `Publication Date`, `Geography` |
 | `import-home.js`, `import-cybersecurity-awareness-month-2026.js`, `import-adobe-*.js`, `import-employee-survey.js`, `import-nav.js`, `import-footer.js` | The first single pages, header, footer |
 | `lib/inside-adobe-components.js` | Shared conversion by component type (droptab → collapsible sections, accordions, tables, callouts, cta, quote, boxes, flex groups → columns-aside, image pop-up tiles → image-modal, live tools → note, shared fragments) |
 | `parsers/*.js`, `transformers/inside-adobe-cleanup.js` | Per-block parsers; site-wide cleanup (chrome removal, heading promotion, jump links, Outlook tracking, emphasis/link fix, line breaks at emphasis edges) |

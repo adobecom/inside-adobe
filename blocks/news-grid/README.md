@@ -13,6 +13,12 @@ Add the block with no content. It reads `/news/query-index.json` (the `news` ind
 collection tag from its **article-meta** block, the title, and the subtitle (the H2 right after
 the H1).
 
+Only articles for the reader's edition (the header's edition picker; United States by default) are
+shown: an article's `Geography` metadata (comma-separated, e.g. `global` or
+`global/americas/united-states/seattle`) must be the edition's geography or contain it. `global`
+is for everyone, and so is an article without `Geography`. Changing the edition updates the tiles
+in place.
+
 ## Supported variations
 
 No variations.

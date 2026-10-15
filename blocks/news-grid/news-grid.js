@@ -1,4 +1,5 @@
 import { createPicture } from '../../scripts/utils/picture.js';
+import { getEdition, inEdition } from '../../scripts/utils/edition.js';
 
 const INDEX = '/news/query-index.json';
 const LIMIT = 10;
@@ -27,14 +28,22 @@ function tile({
   return li;
 }
 
+// the latest articles for the reader's edition (the header's edition picker), again on a change
 export default async function init(el) {
   const resp = await fetch(INDEX);
   if (!resp.ok) throw new Error(`news index: ${resp.status}`);
   const { data } = await resp.json();
-  const list = document.createElement('ul');
-  list.append(...data
-    .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
-    .slice(0, LIMIT)
-    .map(tile));
-  el.replaceChildren(list);
+  const latest = data.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  const render = () => {
+    const edition = getEdition();
+    const list = document.createElement('ul');
+    const tags = (row) => (row.geography || '').split(',').map((t) => t.trim()).filter(Boolean);
+    list.append(...latest
+      .filter((row) => inEdition(tags(row), edition))
+      .slice(0, LIMIT)
+      .map(tile));
+    el.replaceChildren(list);
+  };
+  render();
+  window.addEventListener('edition-change', render);
 }

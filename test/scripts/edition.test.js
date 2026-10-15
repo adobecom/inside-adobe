@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import {
-  DEFAULT_EDITION, getEdition, setEdition, pickVersion,
+  DEFAULT_EDITION, getEdition, setEdition, pickVersion, inEdition,
 } from '../../scripts/utils/edition.js';
 
 const countries = [
@@ -42,6 +42,25 @@ describe('edition', () => {
     // tags match whole segments: "global/emea/united" doesn't contain ".../united-kingdom"
     const partial = [{ href: '/x', tags: ['global/emea/united'] }];
     expect(pickVersion(partial, at('global/emea/united-kingdom'))).to.be.undefined;
+  });
+
+  it('shows tagged content for its geography and anything inside it', () => {
+    const arden = at('global/americas/united-states/arden-hills');
+    expect(inEdition(['global'], arden)).to.be.true;
+    expect(inEdition(['global/americas/united-states'], arden)).to.be.true;
+    expect(inEdition(['global/americas/united-states/arden-hills'], arden)).to.be.true;
+    expect(inEdition(['global/americas/united-states/atlanta'], arden)).to.be.false;
+    expect(inEdition(['global/emea/france', 'global/americas/united-states'], arden)).to.be.true;
+    expect(inEdition([], arden)).to.be.true;
+  });
+
+  it('tells the page when the edition changes', () => {
+    let seen;
+    const listener = (e) => { seen = e.detail.name; };
+    window.addEventListener('edition-change', listener);
+    setEdition({ name: 'Paris', geo: 'global/emea/france/paris', manager: false });
+    window.removeEventListener('edition-change', listener);
+    expect(seen).to.equal('Paris');
   });
 
   it('picks the role version by the manager setting', () => {

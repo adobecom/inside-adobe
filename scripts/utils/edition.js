@@ -15,6 +15,13 @@ export function getEdition() {
 
 export function setEdition(edition) {
   ifLocalStorage.setItem(KEY, JSON.stringify(edition));
+  window.dispatchEvent(new CustomEvent('edition-change', { detail: edition }));
+}
+
+// content tagged with geographies (e.g. news): for the edition when a tag is its geography or
+// contains it ("global" is for everyone); untagged content is for everyone too
+export function inEdition(tags, { geo }) {
+  return !tags.length || tags.some((tag) => geo === tag || geo.startsWith(`${tag}/`));
 }
 
 // versions: [{ href, tags: ['global/emea/france', …] or ['manager'] }]. Country topics: the version
