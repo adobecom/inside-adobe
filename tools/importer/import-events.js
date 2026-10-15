@@ -4,7 +4,8 @@
  * Import for the intranet's "Event" template (242 pages), from the local mirror.
  * Page: More Events button, then the event block (parsers/event.js), then metadata:
  *   Template: event; Event Start / Event End (YYYY-MM-DD, or YYYY-MM-DDTHH:MM when timed);
- *   Event Time Zone (IANA, when the source names one); Event Type; Event Region.
+ *   Event Time Zone (IANA, when the source names one); Event Type; Event Region; Geography (the
+ *   intranet's geography tags; the homepage events list filters by it).
  * Start/end come from the date line, e.g. "Monday, Oct 12, 2026 | 12:00-12:30 pm PT | 3:00-3:30 pm ET"
  * or "Monday, Jun 29, 2026 to Wednesday, Jul 01, 2026".
  */
@@ -67,6 +68,9 @@ export default {
     const type = content?.querySelector('.event-type')?.textContent.trim();
     const region = [...(content?.querySelectorAll('.geo-tag-item') || [])].map((g) => g.textContent.trim()).join(', ');
     const more = content?.querySelector('.view-more-btn a');
+    // who the event is for: the intranet's geography tags (the homepage filters by them)
+    const geography = (document.querySelector('meta[name="geography"]')?.content || '').split(',')
+      .map((t) => t.trim().replace(/^geography:/, '')).filter(Boolean).join(', ');
 
     cleanupTransformer('beforeTransform', main, payload);
     const block = document.querySelector('.event-content-container');
@@ -101,6 +105,7 @@ export default {
       ...(when.start?.includes('T') && (when.tz || REGION_TZ[region]) && { 'Event Time Zone': when.tz || REGION_TZ[region] }),
       ...(type && { 'Event Type': type }),
       ...(region && { 'Event Region': region }),
+      ...(geography && { Geography: geography }),
     }));
     WebImporter.rules.adjustImageUrls(main, payload.url, params.originalURL);
     return [{ element: main, path, report: { title: document.title, start: when.start || '' } }];
