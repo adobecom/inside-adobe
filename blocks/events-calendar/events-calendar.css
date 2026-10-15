@@ -1,0 +1,135 @@
+/* layout, filters and Load more: styles/listing.css; cards: blocks/event/event.css */
+.events-calendar {
+  .events-calendar-items .event {
+    max-width: none;
+    margin-inline: 0;
+
+    .event-title a {
+      color: inherit;
+      font-weight: inherit;
+    }
+  }
+
+  /* date panel: a month grid */
+  .events-calendar-month {
+    display: grid;
+    grid-template-columns: 32px 1fr 32px;
+    align-items: center;
+    padding: 0 15px 20px;
+
+    button {
+      padding: 0;
+      border: 0;
+      background: none;
+    }
+  }
+
+  .events-calendar-month-title {
+    margin: 0;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  :is(.events-calendar-previous, .events-calendar-next) {
+    width: 32px;
+    height: 32px;
+
+    &::before {
+      content: "";
+      display: block;
+      width: 8px;
+      height: 8px;
+      margin: auto;
+      border: solid #2f2f2f;
+      border-width: 0 0 2px 2px;
+      transform: rotate(45deg);
+    }
+  }
+
+  .events-calendar-next::before {
+    transform: rotate(-135deg);
+  }
+
+  .events-calendar-days {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(7, 1fr);
+    margin-top: 8px;
+    text-align: center;
+
+    span {
+      color: #676767;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    button {
+      aspect-ratio: 1;
+      border-radius: 50%;
+      font-size: 14px;
+
+      &:hover {
+        background: #e1e1e1;
+      }
+
+      &.is-today {
+        font-weight: 800;
+        text-decoration: underline;
+      }
+
+      &[aria-pressed="true"] {
+        background: var(--color-link);
+        color: #fff;
+      }
+    }
+  }
+
+  /* planning calendars */
+  .events-calendar-planning {
+    margin-top: 24px;
+
+    h2 {
+      margin: 8px 0;
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 36px;
+    }
+
+    details {
+      position: relative;
+    }
+
+    details > ul {
+      padding: 0 15px 20px;
+    }
+
+    li {
+      padding: 4px 0;
+    }
+  }
+
+  .events-calendar-download {
+    position: absolute;
+    top: 14px;
+    right: 15px;
+    width: 22px;
+    height: 22px;
+    overflow: hidden;
+    color: transparent;
+    background: url("download.svg") center / 18px no-repeat;
+  }
+
+  .events-calendar-holidays li {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    padding: 10px 0;
+    border-bottom: 1px solid #d3d3d3;
+    font-size: 14px;
+    line-height: 22px;
+
+    a {
+      font-size: 16px;
+      font-weight: 700;
+    }
+  }
+}

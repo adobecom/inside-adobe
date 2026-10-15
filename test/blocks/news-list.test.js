@@ -33,7 +33,7 @@ const block = async () => {
   return el;
 };
 const paths = (el) => [...el.querySelectorAll('.news-list-items > li > a')].map((a) => a.getAttribute('href'));
-const chips = (el) => [...el.querySelectorAll('.news-list-chip')].map((c) => c.textContent);
+const chips = (el) => [...el.querySelectorAll('.tag-filters-chip')].map((c) => c.textContent);
 const tick = (el, value, on) => {
   const box = el.querySelector(`input[value="${value}"]`);
   box.checked = on;
@@ -55,8 +55,8 @@ describe('news-list', () => {
     const el = await block();
     expect(chips(el)).to.deep.equal(['Global', 'Americas']);
     expect(paths(el)).to.deep.equal(['/news/seattle', '/news/us', '/news/global', '/news/canada']);
-    expect(el.querySelector('.news-list-count').textContent).to.equal('Displaying 4 of 4');
-    expect(el.querySelector('.news-list-more').hidden).to.be.true;
+    expect(el.querySelector('.listing-count').textContent).to.equal('Displaying 4 of 4');
+    expect(el.querySelector('.listing-more').hidden).to.be.true;
     expect([...el.querySelectorAll('.news-list-geo li')].map((li) => li.textContent))
       .to.deep.equal(['Seattle', 'United States', 'Global', 'Canada']);
   });
@@ -66,7 +66,7 @@ describe('news-list', () => {
     const el = await block();
     expect(chips(el)).to.deep.equal(['Global', 'Americas', 'Need to Know']);
     expect(paths(el)).to.deep.equal(['/news/global']);
-    el.querySelector('.news-list-chip:last-child').click();
+    el.querySelector('.tag-filters-chip:last-child').click();
     tick(el, 'article_topic:adobe-life', true);
     expect(paths(el)).to.deep.equal(['/news/us']);
     expect(el.querySelector('input[value="article_topic:adobe-life/benefits"]').checked).to.be.true;
@@ -78,7 +78,7 @@ describe('news-list', () => {
     expect(paths(el)).to.deep.equal(['/news/global', '/news/canada']);
     expect(chips(el)).to.deep.equal(['Global', 'Canada']);
     expect(el.querySelector('input[value="geography:global/americas"]').indeterminate).to.be.true;
-    el.querySelector('.news-list-reset').click();
+    el.querySelector('.listing-reset').click();
     expect(chips(el)).to.deep.equal(['Global', 'Americas']);
   });
 });

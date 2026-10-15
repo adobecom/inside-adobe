@@ -26,6 +26,7 @@ const { values: opts } = parseArgs({
     'no-follow': { type: 'boolean', default: false },
     headless: { type: 'boolean', default: false },
     'news-archive': { type: 'boolean', default: false },
+    'events-archive': { type: 'boolean', default: false },
     'retry-failed': { type: 'boolean', default: false },
   },
 });
@@ -140,6 +141,36 @@ if (opts['news-archive']) {
   const before = state.queue.length;
   found.forEach((p) => enqueue(pageUrl(p, opts.start[0])));
   console.log(`News archive: ${found.size} articles in the feed, ${state.queue.length - before} not crawled yet`);
+}
+// The events calendar lists events through the same kind of feed (events add .cc_true); most
+// upcoming events aren't linked from any page. GET first, as for news; else the calendar's POST.
+if (opts['events-archive']) {
+  const found = new Set();
+  const EVENT = /"(?:https?:\/\/[^"/]+)?(\/(?:content\/inside\/en\/)?events\/\d{4}\/[^"?#]+?)(?:\.html|\.ics)?"/g;
+  let start = 0;
+  for (;;) {
+    const feed = new URL(`/services/events.ro_.bu_.all_true.st_${start}.li_50.cc_true.json`, opts.start[0]).href;
+    let resp = await context.request.get(feed, { timeout: 60000 }).catch(() => null);
+    if (!resp?.ok()) {
+      const data = { filtersArray: [], dateArray: [] };
+      resp = await context.request.post(feed, { data, timeout: 60000 }).catch(() => null);
+    }
+    if (!resp?.ok()) {
+      console.log(`Events archive: feed stopped at ${start} (${resp ? resp.status() : 'no response'})`);
+      break;
+    }
+    const text = (await resp.text()).replaceAll('\\/', '/');
+    await save(join(OUT, '_feeds', `events-st_${start}.json`), text);
+    const batch = new Set([...text.matchAll(EVENT)].map(([, p]) => `${p}.html`));
+    const { size } = found;
+    batch.forEach((p) => found.add(p));
+    if (found.size === size) break;
+    start += 50;
+    console.log(`Events archive: ${found.size} events listed`);
+  }
+  const before = state.queue.length;
+  found.forEach((p) => enqueue(pageUrl(p, opts.start[0])));
+  console.log(`Events archive: ${found.size} events in the feed, ${state.queue.length - before} not crawled yet`);
 }
 opts.start.forEach((u) => enqueue(pageUrl(u)));
 console.log(saved

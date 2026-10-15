@@ -41,6 +41,7 @@ Useful options:
 | `--with-docs` | off | Also download linked PDFs and Office files from the DAM (works on a finished crawl too: re-run with it to fetch just the documents) |
 | `--no-follow` | off | Only crawl the start URLs / list, don't follow links |
 | `--news-archive` | off | Page through the news listing's feed and crawl every article in it, including ones nothing links to; raw feed responses go in `_feeds/` |
+| `--events-archive` | off | Page through the events calendar's feed (GET, else the calendar's POST) and crawl every event in it; most upcoming events aren't linked from any page. Raw responses go in `_feeds/` |
 | `--retry-failed` | off | Crawl pages again that failed to load last time (network errors; 404s stay) |
 
 A first test run: `node tools/importer/crawl/crawl.mjs --max 50`.
