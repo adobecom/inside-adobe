@@ -67,7 +67,7 @@ repository.
 | Block library | Example documents for 13 blocks and `/library/blocks.json` are in DA. **An `adobecom` org admin** must register them (config changes are admin-only): in the site config (`https://da.live/config#/adobecom/inside-adobe/`) add a `library` sheet with columns `title`, `path` and one row: `Blocks`, `https://content.da.live/adobecom/inside-adobe/library/blocks.json`. |
 | Leftovers in DA | Unlinked test uploads: 3 Office files and the 57 MB PDF (under `/dam/…`); early header/footer copies under `/content/fragments/nav`. Safe to delete. |
 | Live tools (by decision) | Café menus/hours, news listing, events calendar, holiday list, calendar filters, awards feed and the event submission form are replaced by a note linking to the intranet page. Stock quote and My Favorites (homepage) dropped. |
-| Left out | Right-column boxes on news and event pages ("Got a story idea?", "News issue or feedback?", "Submit event details"): never in the article, could become a shared fragment on those templates. Left-column "Need help?" box under some section menus; profile/search/tools rail; 5 section captions on 3 pages; 3 news images broken on the intranet itself (employee-communications: Premier League key visual, Creative residents, Women's FA Cup final). |
+| Left out | Left-column "Need help?" box under some section menus; profile/search/tools rail; 5 section captions on 3 pages; 3 news images broken on the intranet itself (employee-communications: Premier League key visual, Creative residents, Women's FA Cup final). |
 | Engine bug (upstream) | `ak.js` `decorateButton` turns a bold/italic run that holds a link *plus other text* into a button and drops the text. Worked around in the importer; report it upstream. |
 | Flaky tests | `dapreview > should load da.js module` and one header test (language trigger) fail intermittently under load (pre-existing). |
 | Computers listing | Optional: `editions.mjs --topics` with the current script also lists `/computers-devices/computers` (25 versions came from links already); then rebuild the topic page with `build_editions.py`. |
@@ -95,8 +95,8 @@ Edit at `https://da.live/edit#/adobecom/inside-adobe/<path>`.
 |---|---|---|
 | `side-nav` | 360 section pages | Adds the section menu (left on desktop, a bar above the content on mobile); 1236px grid |
 | `full-width` | 86 landing/office pages | 1236px grid; `band` sections (gray strips) |
-| `event` | 242 event pages | More Events button top right; no section dividers |
-| `article` | news | Narrower column, More News top right, normal-weight body links |
+| `event` | 242 event pages | More Events button top right; no section dividers; the event submission box in a column beside it from 1200px (§2.6) |
+| `article` | news | Narrower column, More News top right, normal-weight body links; the news submit boxes in a column beside it from 1200px (§2.6) |
 | `home` | homepage | Content + right rail layout from 1200px |
 
 ### 2.3 Page metadata
@@ -149,6 +149,11 @@ bold when it contains a link plus other text (it becomes a button and loses the 
   then a bulleted list of links. The current page is highlighted automatically.
 - **Shared content** (`/fragments/shared/<name>`): pages include it with a link to the fragment
   on its own line. Editing the fragment updates every page that uses it.
+- **Submit boxes** (`/fragments/shared/news-feedback`, `/fragments/shared/event-submission`): `cta`
+  blocks the page script adds beside every news article ("Got a story idea?", "News issue or
+  feedback?") and every event page ("Want to Promote an Event?"). As on the intranet they sit in a
+  left column from 1200px and are hidden on smaller screens. Edit the fragment to change them
+  everywhere; don't add them to the pages.
 - **Header / footer:** structure from PR #1 (brand section + nested menu list; footer columns, then
   legal links, then copyright, in that order). Their links point to the migrated pages (310 links;
   they pointed at the intranet until 2026-10-14). Menu headings link to `#`; keep it that way.
@@ -196,6 +201,7 @@ Read `AGENTS.md`. The repo is buildless, Baseline Newly available, min-width bre
 |---|---|---|
 | Templates | `templates/{article,home,side-nav,event,full-width}` | CSS per page type, loaded from `Template` metadata |
 | Side nav | `scripts/scripts.js` (`decorateArea`), `blocks/side-nav` | On side-nav pages, appends a section with the side-nav block; the block loads `/fragments/side-nav/<name>`, marks the current link, collapses on mobile |
+| Submit boxes | `scripts/scripts.js` (`decorateArea`), `templates/article`, `templates/event` | On news and event pages, appends a section linking the shared fragment (§2.6); the template CSS puts that last section in a 285px left column from 1200px and hides it below. 27 older articles had no such column on the intranet; they get the boxes too |
 | Collapsible sections | `blocks/section-metadata` | `style: collapsible` builds `<details>/<summary>` from the section |
 | Fragment fix | `blocks/fragment/fragment.js` | A multi-section fragment that fills a whole section is inserted as page sections (it was a bare `main > div`, hidden by the base styles); test in `test/blocks/fragment.test.js` |
 | New blocks | `accordion`, `article-meta`, `callout`, `columns-aside`, `cta`, `event`, `events`, `news-grid`, `quote`, `related-cards`, `welcome` | See §2.5; tests for `event`, `related-cards`, `fragment` |

@@ -35,10 +35,16 @@ const decorateArea = ({ area = document }) => {
 
   eagerLoad(area, 'img');
 
-  // side-nav template: the section menu loads last; the template CSS places it beside the content
-  if (area === document && getMetadata('template') === 'side-nav') {
+  // side column, loaded last; the template CSS places it beside the content: the section menu,
+  // or the shared submit boxes on news and event pages
+  const aside = {
+    'side-nav': '<div class="side-nav"></div>',
+    article: '<p><a href="/fragments/shared/news-feedback">News feedback</a></p>',
+    event: '<p><a href="/fragments/shared/event-submission">Event submission</a></p>',
+  }[getMetadata('template')];
+  if (area === document && aside) {
     const section = document.createElement('div');
-    section.innerHTML = '<div class="side-nav"></div>';
+    section.innerHTML = aside;
     document.querySelector('main')?.append(section);
   }
 };
