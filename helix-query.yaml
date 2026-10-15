@@ -61,6 +61,10 @@ indices:
         select: main .article-meta > div:first-child > div:first-child
         value: |
           textContent(el)
+      tags:
+        select: main .article-meta > div:first-child a
+        values: |
+          attribute(el, "href")
       date:
         select: head > meta[name="publication-date"]
         value: |
