@@ -65,6 +65,10 @@ indices:
         select: head > meta[name="publication-date"]
         value: |
           attribute(el, "content")
+      geography:
+        select: head > meta[name="geography"]
+        value: |
+          attribute(el, "content")
   authors:
     include:
       - /author/**
