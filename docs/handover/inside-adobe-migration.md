@@ -13,10 +13,10 @@ repository.
 |---|---|
 | **Organization / site** | `adobecom` / `inside-adobe` |
 | **Repository** | https://github.com/adobecom/inside-adobe (public) |
-| **Code** | All merged: PR #1 (Mission & Plan, header, footer), PR #3 (templates, blocks, Side-Nav/Event/Full-Width imports), PR #4 (news, documents, redirects, page names), PR #5 (handover), PR #6 (image pop-up tiles), PR #9 (launch prep), PR #10 (editions), PR #11 (editions crawler), PR #12 and #13 (homepage news and events by edition); PR #2 closed. CDN config (`config/cdn.yaml`) on `main`, deployed 2026-10-15. |
+| **Code** | All merged: PR #1 (Mission & Plan, header, footer), PR #3 (templates, blocks, Side-Nav/Event/Full-Width imports), PR #4 (news, documents, redirects, page names), PR #5 (handover), PR #6 (image pop-up tiles), PR #9 (launch prep), PR #10 (editions), PR #11 (editions crawler), PR #12 and #13 (homepage news and events by edition), PR #14 (handover), PR #15 (submit boxes on news and event pages), PR #16 (stock block), PR #17 (news listing), PR #18 (favicon); PR #2 closed. CDN config (`config/cdn.yaml`) on `main`, deployed 2026-10-15. |
 | **Source copy** | Private repo `adobecom/inside-adobe-mirror`: a signed-in crawl of the intranet, plus every country and manager version of the 19 edition topics |
 | **Pages migrated** | **1,437 intranet pages**: everything crawled, all editions (459 country and manager versions), plus 19 topic pages |
-| **Published** | **Everything**, behind sign-in (2026-10-14/15): 1,456 pages, 140 fragments, 1,357 PDFs, `/redirects`, `/editions`; news and events republished 2026-10-15 with `Geography` (news and events indexes). `preview.inside.adobe.com` is in use from Adobe's network (it doesn't resolve from outside) |
+| **Published** | **Everything**, behind sign-in (2026-10-14/15): 1,456 pages, 142 fragments, 1,357 PDFs, `/redirects`, `/editions`, `/news-filters`; news and events republished 2026-10-15 with `Geography`, news re-indexed with its tags. Since then: `/news` (the listing) and the homepage (stock box). `preview.inside.adobe.com` is in use from Adobe's network (it doesn't resolve from outside) |
 | **Authoring** | Authors started editing in DA on 2026-10-14; DA is now the source of truth, not the import (§1) |
 
 ---
@@ -32,10 +32,10 @@ repository.
    Adobe's network only (no public DNS). `config/cdn.yaml` sends the site token to the origin, so the
    CDN serves the protected pages to anyone who can reach the hostname: keep it internal, or add
    sign-in on the CDN, before any public DNS.
-3. **Publish or discard the pending author edits.** Saved in DA after the bulk publish, still not live
-   on 2026-10-15:
-   `/about-adobe/adobe-mission-and-plan` (16:23 UTC, not previewed), `/index` (17:05, previewed, not
-   published), `/about-adobe` (17:09, not previewed).
+3. **Publish or discard the pending author edits.** Saved in DA on 2026-10-14 after the bulk publish,
+   still not live: `/about-adobe/adobe-mission-and-plan` (16:23 UTC) and `/about-adobe` (17:09),
+   neither previewed. The homepage edit went live when `/index` was published on 2026-10-15 at
+   15:06 UTC (not by the migration), together with the stock box (§2.5).
 4. **Mirror history:** replaced with a fresh history (the commit with session cookies is no longer
    on a branch; GitHub drops unreferenced commits over time). Sign out of the intranet to end that
    session if not done yet.
@@ -47,11 +47,11 @@ repository.
 | Side-Nav Page | 360 | Published. Includes Mission & Plan, Adobe Research, Employee Survey (the Side-Nav versions since 2026-10-13) |
 | Event | 246 | Published: 149 from the first crawl, 93 found by the re-crawl, 4 linked from country pages |
 | Full-Width Page | 86 | Published (44 section landing pages, 42 office pages) |
-| Homepage | 1 | Published; the news grid and events list follow the reader's edition (§2.7). An author edit is pending (§1) |
-| News Article | 285 | Published, full archive from the news feed (281), plus 4 older articles linked from country pages |
+| Homepage | 1 | Published (last 2026-10-15, with the author's edit and the stock box); the news grid and events list follow the reader's edition (§2.7) |
+| News Article | 285 | Published, full archive from the news feed (281), plus 4 older articles linked from country pages. Listed on `/news` (`news-list` block) |
 | Edition versions | 459 | Published: every country version of 13 topics (up to 37 countries each) and the manager version of 6 role topics (§2.7) |
 | Edition topic pages | 19 | Published: the topic's own address picks the reader's version (§2.7) |
-| Shared content | 84 section menus, 54 shared fragments, header, footer | Published |
+| Shared content | 84 section menus, 56 shared fragments (incl. the news and event submit boxes), header, footer | Published |
 | Images | ~1,530 | In DA under `/dam/…` (intranet DAM paths, lowercased); served from the pages once previewed. One 26 MB PNG (Steven Bartlett article) replaced by a resized JPEG to fit the 20 MB limit; the Ovidiu Eftimie photo (Career Opportunities), missing from the crawl, saved by hand from the intranet |
 | Documents | 1,357 PDFs | Published under `/dam/…`; every page link to them rewritten (305 added with the editions) |
 
@@ -197,7 +197,7 @@ Read `AGENTS.md`. The repo is buildless, Baseline Newly available, min-width bre
 600/900/1200px. `scripts/ak.js` (the shared engine) was **not** modified; project hooks live in
 `scripts/scripts.js`.
 
-### 3.2 Site code added in PR #3, #4, #6, #9 and #10
+### 3.2 Site code added in PR #3, #4, #6, #9, #10 and #15–#18
 
 | Area | Files | Summary |
 |---|---|---|
@@ -213,6 +213,9 @@ Read `AGENTS.md`. The repo is buildless, Baseline Newly available, min-width bre
 | Article locations (PR #4) | `blocks/article-meta` | Optional third row: office locations, shown under the tags |
 | Editions (PR #10) | `blocks/header/edition-picker.{js,css}`, `blocks/edition-pages`, `scripts/utils/edition.js`, `test/scripts/edition.test.js` | Picker loaded on first click from the header's edition link; `pickVersion()` matches an edition's geography to a version's tags (longest prefix) or the manager setting; tests cover matching and storage |
 | Image pop-up tiles (PR #6) | `blocks/image-modal`, `test/blocks/image-modal.test.js` | Tiles open a native modal `<dialog>` (Escape, × or a click outside closes it, focus returns to the tile); the overlay starts below the fixed header so the panel sits 140px from the top, as on the intranet |
+| Stock (PR #16) | `blocks/stock`, `test/blocks/stock.test.js` | One request to Barchart OnDemand `getQuote.json` on load, as the intranet's script did; the key is authored in the block, never in code |
+| News listing (PR #17) | `blocks/news-list`, `test/blocks/news-list.test.js`, `helix-query.yaml` (`tags`) | Filters and paging in the browser over the news index; filter lists from the `/news-filters` sheet (built from the intranet's panels by `.migration/scripts/build_news_filters.py`) |
+| Favicon (PR #18) | `img/favicons/` | The intranet's red Adobe "A", redrawn as a vector (`.migration/scripts/build_favicons.cjs` writes all sizes); loaded on every page by `scripts/utils/favicon.js` |
 | Site settings | `scripts/scripts.js` | `hostnames`: `inside.adobe.com` (covers `preview.inside.adobe.com`) and the aem.page/aem.live hosts, so links to the site itself become relative; the intranet stays absolute. `locales`: US English only |
 
 ### 3.3 Import tooling (`tools/importer/`)
@@ -283,7 +286,11 @@ Things to know:
   (`.migration/scripts/sweep.cjs`): no blocks failing to load, no missing block code, no script
   errors. 32 pages scrolled sideways on phones (wide tables, long URLs, tiles in narrow sections),
   fixed in CSS. 13 pages carry empty, invisible links copied from the intranet (harmless).
-- **Code:** eslint/stylelint clean; 152 tests pass (`dapreview` and one header test are flaky under load).
+- **Code:** eslint/stylelint clean; 157 tests pass (`dapreview` and one header test are flaky under load).
+- **News listing:** with the US defaults (Global + Americas) it lists 244 articles, the intranet's own
+  count; tag links, Load more, nested ticks and Reset checked in the local preview.
+- **Stock:** Barchart answers the intranet's key from `preview.inside.adobe.com` and aem.page with
+  CORS open; the block showed the live quote in a browser.
 - **Homepage by edition:** the rule was checked against the intranet's own homepage for the US
   edition on 2026-10-12: the same 10 news articles qualify, and the events list picks the same 3
   events (observances left out, only events starting that day or later).
@@ -326,12 +333,12 @@ each page from `head.html` and the imported `.plain.html` for the checks.
 
 | Paths | Preview | Live |
 |---|---|---|
-| 1,456 pages (incl. 459 edition versions, 19 topic pages), 140 fragments | 200 | 200 |
-| 1,357 PDFs under `/dam/…`, `/redirects.json`, `/editions.json` | 200 | 200 |
-| `/news/query-index.json`, `/events/query-index.json` | 200 | 200 (filled by publishing the articles and events; both carry `geography`) |
+| 1,456 pages (incl. 459 edition versions, 19 topic pages), 142 fragments | 200 | 200 |
+| 1,357 PDFs under `/dam/…`, `/redirects.json`, `/editions.json`, `/news-filters.json` | 200 | 200 |
+| `/news/query-index.json`, `/events/query-index.json` | 200 | 200 (filled by publishing the articles and events; both carry `geography`, news also `tags`) |
 | Office files and PDFs over 20 MB (§1) | not previewable | — |
 | `/about-adobe/adobe-mission-and-plan`, `/about-adobe` | author edits in DA not previewed | older version |
-| `/index` | author edit previewed | older version |
+| `/index` | 2026-10-15 15:00 | 2026-10-15 15:06 |
 
 ### 4.3 Admin API
 
@@ -408,7 +415,9 @@ malformed source links and calendar files for events that weren't crawled.
 
 `helix-query.yaml` defines the `news` index (merged with PR #3). Publishing the articles on
 2026-10-14 filled `/news/query-index.json` (checked: records carry title, subtitle, image,
-collection, date). If the Config Service has its own index configuration, it overrides the file.
+collection, date). PR #17 added `tags` (the article-meta tag links, for the listing's topic and
+collection filters); all 285 articles were re-indexed on 2026-10-15 with a bulk `index` job. If the
+Config Service has its own index configuration, it overrides the file.
 Re-index a page with the `index` Admin API call. News items that only redirected elsewhere
 (§4.6) aren't pages, so they don't appear in the homepage feed.
 
@@ -416,5 +425,5 @@ Re-index a page with the `index` Admin API call. News items that only redirected
 
 - DA uploads used the Adobe-credentials permission and GitHub access used a fine-grained token,
   both set in Settings → LLM Permissions. Revoke or rotate them when no longer needed.
-- Commits are authored as Chris Peyer <cpeyer@adobe.com>.
+- Commits carry the site owner's Git identity, with the assistant as co-author.
 - The mirror's manifest contained session cookies (§1); signing out invalidates that session.
