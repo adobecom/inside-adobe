@@ -19,11 +19,12 @@ describe('dapreview', () => {
   });
 
   it('should load da.js module', async () => {
-    // Wait for dynamic import to complete
-    await new Promise((resolve) => { setTimeout(resolve, 100); });
-
-    const resources = performance.getEntriesByType('resource');
-    const daLoaded = resources.some((r) => r.name.includes('tools/da/da.js'));
-    expect(daLoaded).to.be.true;
+    // da.js is imported once the page has loaded: slower when the suite runs in parallel
+    const daLoaded = () => performance.getEntriesByType('resource')
+      .some((r) => r.name.includes('tools/da/da.js'));
+    for (let i = 0; i < 50 && !daLoaded(); i += 1) {
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+    }
+    expect(daLoaded()).to.be.true;
   });
 });
