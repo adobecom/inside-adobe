@@ -13,10 +13,10 @@ repository.
 |---|---|
 | **Organization / site** | `adobecom` / `inside-adobe` |
 | **Repository** | https://github.com/adobecom/inside-adobe (public) |
-| **Code** | All merged: PR #1 (Mission & Plan, header, footer), PR #3 (templates, blocks, Side-Nav/Event/Full-Width imports), PR #4 (news, documents, redirects, page names), PR #5 (handover), PR #6 (image pop-up tiles), PR #9 (launch prep), PR #10 (editions); PR #2 closed. CDN config (`config/cdn.yaml`) on `main`, not yet deployed. |
+| **Code** | All merged: PR #1 (Mission & Plan, header, footer), PR #3 (templates, blocks, Side-Nav/Event/Full-Width imports), PR #4 (news, documents, redirects, page names), PR #5 (handover), PR #6 (image pop-up tiles), PR #9 (launch prep), PR #10 (editions), PR #11 (editions crawler), PR #12 and #13 (homepage news and events by edition); PR #2 closed. CDN config (`config/cdn.yaml`) on `main`, not yet deployed. |
 | **Source copy** | Private repo `adobecom/inside-adobe-mirror`: a signed-in crawl of the intranet, plus every country and manager version of the 19 edition topics |
 | **Pages migrated** | **1,437 intranet pages**: everything crawled, all editions (459 country and manager versions), plus 19 topic pages |
-| **Published** | **Everything**, behind sign-in (2026-10-14/15): 1,456 pages, 140 fragments, 1,357 PDFs, `/redirects`, `/editions`. `preview.inside.adobe.com` is in use from Adobe's network (it doesn't resolve from outside) |
+| **Published** | **Everything**, behind sign-in (2026-10-14/15): 1,456 pages, 140 fragments, 1,357 PDFs, `/redirects`, `/editions`; news and events republished 2026-10-15 with `Geography` (news and events indexes). `preview.inside.adobe.com` is in use from Adobe's network (it doesn't resolve from outside) |
 | **Authoring** | Authors started editing in DA on 2026-10-14; DA is now the source of truth, not the import (§1) |
 
 ---
@@ -32,7 +32,8 @@ repository.
    Adobe's network only (no public DNS). `config/cdn.yaml` sends the site token to the origin, so the
    CDN serves the protected pages to anyone who can reach the hostname: keep it internal, or add
    sign-in on the CDN, before any public DNS.
-3. **Publish or discard the pending author edits.** Saved in DA after the bulk publish, not live:
+3. **Publish or discard the pending author edits.** Saved in DA after the bulk publish, still not live
+   on 2026-10-15:
    `/about-adobe/adobe-mission-and-plan` (16:23 UTC, not previewed), `/index` (17:05, previewed, not
    published), `/about-adobe` (17:09, not previewed).
 4. **Mirror history:** replaced with a fresh history (the commit with session cookies is no longer
@@ -46,7 +47,7 @@ repository.
 | Side-Nav Page | 360 | Published. Includes Mission & Plan, Adobe Research, Employee Survey (the Side-Nav versions since 2026-10-13) |
 | Event | 246 | Published: 149 from the first crawl, 93 found by the re-crawl, 4 linked from country pages |
 | Full-Width Page | 86 | Published (44 section landing pages, 42 office pages) |
-| Homepage | 1 | Published |
+| Homepage | 1 | Published; the news grid and events list follow the reader's edition (§2.7). An author edit is pending (§1) |
 | News Article | 285 | Published, full archive from the news feed (281), plus 4 older articles linked from country pages |
 | Edition versions | 459 | Published: every country version of 13 topics (up to 37 countries each) and the manager version of 6 role topics (§2.7) |
 | Edition topic pages | 19 | Published: the topic's own address picks the reader's version (§2.7) |
@@ -66,9 +67,10 @@ repository.
 | Block library | Example documents for 13 blocks and `/library/blocks.json` are in DA. **An `adobecom` org admin** must register them (config changes are admin-only): in the site config (`https://da.live/config#/adobecom/inside-adobe/`) add a `library` sheet with columns `title`, `path` and one row: `Blocks`, `https://content.da.live/adobecom/inside-adobe/library/blocks.json`. |
 | Leftovers in DA | Unlinked test uploads: 3 Office files and the 57 MB PDF (under `/dam/…`); early header/footer copies under `/content/fragments/nav`. Safe to delete. |
 | Live tools (by decision) | Café menus/hours, news listing, events calendar, holiday list, calendar filters, awards feed and the event submission form are replaced by a note linking to the intranet page. Stock quote and My Favorites (homepage) dropped. |
-| Left out | Left-column "Need help?" box under some section menus; profile/search/tools rail; 5 section captions on 3 pages; 3 news images broken on the intranet itself (employee-communications: Premier League key visual, Creative residents, Women's FA Cup final). |
+| Left out | Right-column boxes on news and event pages ("Got a story idea?", "News issue or feedback?", "Submit event details"): never in the article, could become a shared fragment on those templates. Left-column "Need help?" box under some section menus; profile/search/tools rail; 5 section captions on 3 pages; 3 news images broken on the intranet itself (employee-communications: Premier League key visual, Creative residents, Women's FA Cup final). |
 | Engine bug (upstream) | `ak.js` `decorateButton` turns a bold/italic run that holds a link *plus other text* into a button and drops the text. Worked around in the importer; report it upstream. |
-| Flaky test | `dapreview > should load da.js module` fails intermittently under load (pre-existing). |
+| Flaky tests | `dapreview > should load da.js module` and one header test (language trigger) fail intermittently under load (pre-existing). |
+| Computers listing | Optional: `editions.mjs --topics` with the current script also lists `/computers-devices/computers` (25 versions came from links already); then rebuild the topic page with `build_editions.py`. |
 
 ---
 
@@ -273,7 +275,10 @@ Things to know:
   (`.migration/scripts/sweep.cjs`): no blocks failing to load, no missing block code, no script
   errors. 32 pages scrolled sideways on phones (wide tables, long URLs, tiles in narrow sections),
   fixed in CSS. 13 pages carry empty, invisible links copied from the intranet (harmless).
-- **Code:** eslint/stylelint clean; 142 tests pass (`dapreview` and one header test are flaky under load).
+- **Code:** eslint/stylelint clean; 152 tests pass (`dapreview` and one header test are flaky under load).
+- **Homepage by edition:** the rule was checked against the intranet's own homepage for the US
+  edition on 2026-10-12: the same 10 news articles qualify, and the events list picks the same 3
+  events (observances left out, only events starting that day or later).
 - **Preview:** the stored version of every page and fragment was checked for failed images:
   1,107 of 1,110 clean; the 3 others are the news images broken on the intranet itself (§1).
 
@@ -309,13 +314,13 @@ each page from `head.html` and the imported `.plain.html` for the checks.
 | Live (main) | https://main--inside-adobe--adobecom.aem.live |
 | Authoring | https://da.live/#/adobecom/inside-adobe |
 
-### 4.2 Content status (Admin API, 2026-10-14)
+### 4.2 Content status (Admin API, 2026-10-15)
 
 | Paths | Preview | Live |
 |---|---|---|
 | 1,456 pages (incl. 459 edition versions, 19 topic pages), 140 fragments | 200 | 200 |
 | 1,357 PDFs under `/dam/…`, `/redirects.json`, `/editions.json` | 200 | 200 |
-| `/news/query-index.json` | 200 | 200 (filled by publishing the articles) |
+| `/news/query-index.json`, `/events/query-index.json` | 200 | 200 (filled by publishing the articles and events; both carry `geography`) |
 | Office files and PDFs over 20 MB (§1) | not previewable | — |
 | `/about-adobe/adobe-mission-and-plan`, `/about-adobe` | author edits in DA not previewed | older version |
 | `/index` | author edit previewed | older version |
