@@ -146,6 +146,9 @@ export default async function init(block) {
   };
   const groups = GROUPS.map(([sheet, heading]) => [heading, sheets?.[sheet]?.data || []]);
   const filters = tagFilters(groups, changed);
+  // a link such as /calendar?tagValue=event:key-company-dates adds that filter
+  const tagValue = new URL(window.location.href).searchParams.get('tagValue');
+  if (tagValue) filters.add(tagValue);
   const picker = datePicker((value) => {
     range = value;
     changed();

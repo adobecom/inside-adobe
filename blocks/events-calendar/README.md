@@ -7,7 +7,8 @@ running shows today's date.
 
 Filters: **Date** (a month grid: pick a day, then a later day for a range), **Event Category**,
 **Event Type** and **Locations**. The listing starts with **Global** and the reader's region (from
-the header's edition picker); **Reset Filters** goes back to that. Beside the filters,
+the header's edition picker); a link with `?tagValue=…` (e.g. `/calendar?tagValue=event:key-company-dates`)
+adds that filter. **Reset Filters** goes back to Global and the region. Beside the filters,
 **Planning Calendars**: the reader's holidays this year (Office Closure & Holidays events for
 their edition) and the authored Other Calendars links.
 
