@@ -1,6 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { setConfig } from '../../scripts/ak.js';
 import init from '../../blocks/events-calendar/events-calendar.js';
+import { DEFAULT_EDITION, setEdition } from '../../scripts/utils/edition.js';
 
 const day = (offset) => {
   const d = new Date();
@@ -41,6 +42,8 @@ const block = async () => {
     <div><div>Holidays</div><div><p><a href="https://example.com/holidays">Download full holiday calendar</a></p></div></div>
     <div><div>Other Calendars</div><div><ul><li><a href="/calendar/key-company-dates">Key Company Dates</a></li></ul></div></div>`;
   document.body.append(el);
+  // test files share storage when run in parallel: don't rely on the default edition
+  setEdition(DEFAULT_EDITION);
   await init(el);
   await settle();
   return el;

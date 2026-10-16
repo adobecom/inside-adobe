@@ -1,5 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { setViewport } from '@web/test-runner-commands';
+import { setConfig } from '../../scripts/ak.js';
 
 let headerStylesheetLoaded = null;
 const mountedHeaders = [];
@@ -534,6 +535,9 @@ describe('nav labeling', () => {
 });
 
 describe('action state', () => {
+  // the language menu loads a fragment; link decoration needs hostnames and linkBlocks (AGENTS.md)
+  before(() => setConfig({ hostnames: ['inside.adobe.com'], linkBlocks: [] }));
+
   afterEach(() => {
     localStorage.removeItem('color-scheme');
     document.body.classList.remove('dark-scheme', 'light-scheme');
@@ -562,6 +566,13 @@ describe('action state', () => {
     expect(btn.getAttribute('aria-pressed')).to.equal(String(prefersDark));
   });
 
+  // the language menu opens once its fragment has loaded: slower when the suite runs in parallel
+  const opened = async (btn) => {
+    for (let i = 0; i < 50 && btn.getAttribute('aria-expanded') !== 'true'; i += 1) {
+      await new Promise((resolve) => { setTimeout(resolve, 20); });
+    }
+  };
+
   it('reports language as expandable', async () => {
     const el = await mountFullHeaderWithActions();
     const btn = el.querySelector('.action-wrapper.language button');
@@ -575,7 +586,7 @@ describe('action state', () => {
       const el = await mountFullHeaderWithActions();
       const btn = el.querySelector('.action-wrapper.language button');
       btn.click();
-      await new Promise((resolve) => { setTimeout(resolve, 0); });
+      await opened(btn);
       expect(btn.getAttribute('aria-expanded')).to.equal('true');
       const link = el.querySelector('.language.menu a');
       link.focus();
@@ -597,7 +608,7 @@ describe('action state', () => {
       // Toggle precedes language in document order, inside the same
       // .actions-section that gains "is-open" when the language menu opens.
       langBtn.click();
-      await new Promise((resolve) => { setTimeout(resolve, 0); });
+      await opened(langBtn);
       expect(langBtn.getAttribute('aria-expanded')).to.equal('true');
       expect(toggleBtn.getAttribute('aria-expanded')).to.equal('false');
 
