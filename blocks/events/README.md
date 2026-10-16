@@ -10,6 +10,12 @@ starting today or later, as on the intranet. Like the intranet's homepage it lea
 Model: `standalone`
 
 - Row 1: the heading (`Events`) | a **bold** link to the calendar (renders as a button).
+- Optional rows that narrow the list, as on the intranet's embedded event lists:
+  - `Category` | an event type label, e.g. `Benefits & Wellbeing` or `Key Company Dates` (instead
+    of leaving out observances).
+  - `Location` | a geography tag, e.g. `global/americas/united-states/seattle`: that place's events,
+    whatever the reader's edition.
+  - `Limit` | how many events (default 3).
 - Optional rows, one per event: date as `OCT 12` | location | event title, linked to the event
   page. They're only shown when the events index can't be loaded.
 

@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import init from '../../blocks/events/events.js';
-import { setEdition } from '../../scripts/utils/edition.js';
+import { DEFAULT_EDITION, setEdition } from '../../scripts/utils/edition.js';
 
 const day = (offset) => {
   const d = new Date();
@@ -27,6 +27,8 @@ const block = () => {
   el.innerHTML = `<div><div><h2>Events</h2></div><div><p><strong><a href="/calendar">More Events</a></strong></p></div></div>
     <div><div>OCT 12</div><div>Americas</div><div><a href="/events/authored">Authored event</a></div></div>`;
   document.body.append(el);
+  // test files share storage when run in parallel: don't rely on the default edition
+  setEdition(DEFAULT_EDITION);
   return el;
 };
 const titles = (el) => [...el.querySelectorAll('li a .events-info span:last-child')].map((s) => s.textContent);
@@ -58,6 +60,22 @@ describe('events', () => {
     setEdition({ name: 'Seattle', geo: 'global/americas/united-states/seattle', manager: false });
     expect(titles(el)).to.deep.equal(['Seattle meetup', 'US benefits fair', 'Global day']);
     el.remove();
+  });
+
+  it('narrows to a category, a location and a limit when authored', async () => {
+    window.fetch = async () => new Response(JSON.stringify(INDEX));
+    const el = block();
+    el.insertAdjacentHTML('beforeend', '<div><div>Category</div><div>Benefits &amp; Wellbeing</div></div><div><div>Limit</div><div>1</div></div>');
+    await init(el);
+    expect(titles(el)).to.deep.equal(['US benefits fair']);
+    el.remove();
+
+    const office = block();
+    office.insertAdjacentHTML('beforeend', '<div><div>Location</div><div>global/americas/united-states/seattle</div></div>');
+    await init(office);
+    // the place's events whatever the reader's edition; nothing Global or country-wide
+    expect(titles(office)).to.deep.equal(['Seattle meetup']);
+    office.remove();
   });
 
   it('keeps the authored events when the index is unavailable', async () => {

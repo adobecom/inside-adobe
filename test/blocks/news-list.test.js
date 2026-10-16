@@ -1,5 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import init from '../../blocks/news-list/news-list.js';
+import { DEFAULT_EDITION, setEdition } from '../../scripts/utils/edition.js';
 
 const tag = (type, value) => `/news?tagtype=${type}&tagValue=${type}:${value}`;
 const article = (path, date, geography, tags = []) => ({
@@ -29,6 +30,8 @@ const block = async () => {
   const el = document.createElement('div');
   el.innerHTML = '<div><div><h1>News</h1></div></div>';
   document.body.append(el);
+  // test files share storage when run in parallel: don't rely on the default edition
+  setEdition(DEFAULT_EDITION);
   await init(el);
   return el;
 };
