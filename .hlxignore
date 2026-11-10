@@ -6,3 +6,4 @@ package-lock.json
 test/
 workers/
 tools/importer/crawl/
+catalog/

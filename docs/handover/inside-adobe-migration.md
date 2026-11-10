@@ -64,7 +64,8 @@ repository.
 | Re-save incident (2026-10-14) | Between 04:25 and 04:59 UTC an unidentified tool re-saved every DA document, pointing images at page-folder copies it never created (images broke in preview), rewriting `#` links to `/`, dropping `?` queries and trimming hyphens. All 1,110 documents were restored from the import and verified byte for byte before the bulk preview; the re-saved versions are backed up locally. The tool is still unidentified: don't run bulk tools that rewrite media or links on this content. |
 | Redirects | Sheet `/redirects` (2,250 rows, §4.6), published and active: intranet redirects, renamed pages, moved PDFs. The two CDN rules in `config/cdn.yaml` (`.html` suffix, `/content/inside/en` prefix) were deployed through the Cloud Manager config pipeline on 2026-10-15; check them with the `curl -I` commands in §4.6. |
 | Editions: language | The intranet's picker says an edition may change the language; no other-language pages turned up (country versions are in English). Homepage news and events are filtered by edition (each page's `Geography`). |
-| Block library | Example documents for 15 blocks (Edition pages added 2026-10-15) and `/library/blocks.json` are in DA, registered in the site config's `library` sheet (2026-10-15): authors see **Blocks** in the editor's Library panel. Add a block by adding its example under `/library/blocks/` and a row to `blocks.json`. |
+| Block library | Example documents for 27 blocks (Edition pages added 2026-10-15; the homepage, news and events list blocks and the template blocks hero, columns, card, YouTube, `columns-video` and `columns-image` added 2026-11-10) and `/library/blocks.json` are in DA, registered in the site config's `library` sheet (2026-10-15): authors see **Blocks** in the editor's Library panel. Add a block by adding its example under `/library/blocks/` and a row to `blocks.json`. |
+| Template library | Page templates for the four common page types (§2.2) are in DA under `/library/templates/`, listed in `/library/templates.json` (`key` = name shown, `value` = document URL), 2026-11-10. **To do:** add a row to the site config's `library` sheet (title `Templates`, path `https://content.da.live/adobecom/inside-adobe/library/templates.json`); our account was refused config changes (403), so someone with config rights has to add it. Until then authors don't see **Templates** in the Library panel. |
 | Leftovers in DA | Removed 2026-10-15: 3 unlinked Office files, the 54 MB PDF and the early header/footer copies under `/content/fragments/nav` (backed up in `.migration/backup-leftovers/`). |
 | Live tools (by decision) | Café menus/hours and the event submission form are replaced by a note linking to the intranet page. The embedded event and news lists (84 + 2 pages) are `events` / `news-box` blocks since 2026-10-16. My Favorites (homepage) dropped; the stock quote is the `stock` block, the news listing (`/news`) the `news-list` block and the events calendar with its holiday list and filters (`/calendar`) the `events-calendar` block (§2.5). |
 | Left out | Profile/search/tools rail; 5 section captions on 3 pages; 3 news images broken on the intranet itself (employee-communications: Premier League key visual, Creative residents, Women's FA Cup final). |
@@ -99,6 +100,20 @@ Edit at `https://da.live/edit#/adobecom/inside-adobe/<path>`.
 | `article` | news | Narrower column, More News top right, normal-weight body links; the news submit boxes in a column beside it from 1200px (§2.6) |
 | `home` | homepage | Content + right rail layout from 1200px |
 
+**Starting a new page:** the editor's Library panel → **Templates** inserts a whole page with
+placeholder text and its page metadata already set (once the config row is added, §1):
+
+| Library template | `Template` | Contains |
+|---|---|---|
+| Section page (side menu) | `side-nav` | Title; intro text with a Questions? box beside it (`columns-aside`); `cta`; a collapsible section with a `table`; a collapsible FAQ (`accordion`) |
+| News article | `article` | More News button; `article-meta` (tags, date, locations); headline, subtitle, feature image, body, `quote`; `Publication Date` and `Geography` |
+| Event | `event` | More Events button; `event` block (Type, Region, Title, When, Where, Link, Details); `Event Start` / `End` / `Time Zone` / `Type` / `Region` and `Geography` |
+| Landing or office page (full width) | `full-width` | Title; a `band` section of `related-cards`; a section with `columns-aside` |
+
+Placeholder dates and geographies are valid examples (`2026-01-15`, `global`), so replace them
+before previewing. `/library/` is outside the news and events indexes, so the templates
+themselves never appear in listings.
+
 ### 2.3 Page metadata
 
 | Key | Where | Meaning |
@@ -131,7 +146,7 @@ Edit at `https://da.live/edit#/adobecom/inside-adobe/<path>`.
 | `quote` | one cell: quote, then attribution paragraph | |
 | `card-resource` / `card-resource (video)` | one cell: H3 and image (either order), text, links | Video option draws a play button |
 | `columns-aside` | one row: main text \| aside (box, video card, image, callout, call to action or shared fragment link) | Side by side from 900px |
-| `columns-video`, `columns-image` | one row: text \| video thumbnail or image | Built for the first Mission & Plan import; no page uses them since it was re-imported as a Side-Nav page (not in the library) |
+| `columns-video`, `columns-image` | one row: text \| video thumbnail or image | Built for the first Mission & Plan import; no page uses them since it was re-imported as a Side-Nav page (in the library since 2026-11-10, marked unused) |
 | `related-cards` | one row per card: image \| linked H3 + description | Photo tiles, 4/2/1 per row |
 | `event` | label \| value rows: Type, Region, Title (H1), When, Where, Link, Details | Chip and calendar file come from metadata (§2.3); keep **When** in step with `Event Start/End`. A **Link** whose text says Register shows a Register button instead of Add to Calendar, as on the intranet |
 | `article-meta` | row 1: collection tag \| topic tags; row 2: date; optional row 3: list of office locations | Articles; locations show under the tags |
